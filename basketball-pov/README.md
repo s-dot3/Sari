@@ -2,7 +2,7 @@
 
 2K-style gameplay clips and breakdowns, rendered from three.js and driven by real motion capture.
 
-- **Compilation:** every video below, v1 to v10, back to back in one portrait clip. [`out/compilation.mp4`](out/compilation.mp4) (5:27, 720×1280, 30 fps, H.264 + AAC; the landscape v1-v3 sit over a blurred fill)
+- **Compilation:** every basketball video below, v1 to v11, back to back in one portrait clip. [`out/compilation.mp4`](out/compilation.mp4) (6:37, 720×1280, 30 fps, H.264 + AAC; the landscape v1-v3 sit over a blurred fill)
 - **v12 (latest): "Read the Room".** Not basketball: a split screen, what he does on top and what his brain does underneath at the same moment, as one guy walks up to three people mid-conversation, checked out and then locked in, and why the locked-in one develops faster. [`out/read_the_room.mp4`](out/read_the_room.mp4) (1080×1920 portrait, 30 fps, H.264 + AAC)
 - v11: film room, "Behind the Curtain". A sharp player learns a new move (between the legs, cross, cross back, step-back) at rep 1, rep 3 and rep 6, then makes it his own live. Every rep plays as it looks in the gym, then the picture splits like a curtain onto what he's running behind it: his eyes, the steps fusing into chunks, his man's weight, his options. [`out/behind_the_curtain.mp4`](out/behind_the_curtain.mp4) (1080×1920 portrait, 30 fps, H.264 + AAC)
 - v10: film room, "Shoot Over Him". An iso pull-up into a good contest, in three beats: gather the ball into both hands, set your feet with a 1-2, then rise straight up and release over his hand. Then the same iso pulled up without stopping, drifting into him. [`out/shoot_over_him.mp4`](out/shoot_over_him.mp4) (1080×1920 portrait, 30 fps, H.264 + AAC)
