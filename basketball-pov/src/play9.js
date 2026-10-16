@@ -73,7 +73,7 @@ export const REPS = {
   },
   mirror: {
     simEnd: 3.0,
-    plan: { hold: [0, 0.02], gatherDur: 0.2, shotClip: 3.38, flight: 1.15, camRef: 0.6, camAngle: 1.15, camSide: 1, camH: 2.3,
+    plan: { hold: [0, 0.02], gatherDur: 0.2, shotClip: 3.38, flight: 1.15, camRef: 0.6, camAngle: 0.85, camSide: 1, camH: 3.0,
       miss: { side: -0.05, kick: -0.35 } }, // (from behind his shoulder, so the cross and your slide go across the picture)
     build(clips, legs) {
       const P = this.plan;
