@@ -26,7 +26,7 @@ const REC = { back: 0.85, sit: 1.32 };
 function practice(a, b, spot, miss) {
   return {
     simEnd: 3.4 / Math.min(1, a) + 0.4,
-    plan: { hold: [0, 0.02], gatherDur: 0.2, shotClip: 3.38, flight: 1.15, camRef: 0.8, camAngle: 0.2, camSide: 1, camH: 1.8, camPush: 0.4, ...(miss ? { miss } : {}) },
+    plan: { hold: [0, 0.02], gatherDur: 0.2, shotClip: 3.38, flight: 1.15, camRef: 0.8, camAngle: 0.2, camSide: 1, camH: 1.8, camPush: 0.4, camTake: { side: -1, az0: 0.72, az1: 0.28, back0: 3.3, back1: 4.6, h0: 2.6, h1: 3.1, fov0: 46, fov1: 62, follow: 0.3, lookRim: 0.36 }, ...(miss ? { miss } : {}) },
     build(clips, legs) {
       const P = this.plan;
       const A = { clip: '06_13', from: 28.6, at: 0, rate: a };
@@ -40,7 +40,7 @@ function practice(a, b, spot, miss) {
       // then plants and slides back at you (its slide to his left from where it's picking up speed - it runs ~80 deg
       // left of where he faces - aimed a stride short of where you'll shoot) and sits down there. The same man every
       // rep, on the same clock from your cross: the slower your hop, the more of the way back he gets
-      const h = you.hip(tCross), F = you.at(tCross).yaw, at0 = { x: h.x + Math.sin(F) * 1.15, z: h.z + Math.cos(F) * 1.15 };
+      const h = you.hip(tCross), F = you.at(tCross).yaw, at0 = { x: h.x + Math.sin(F) * 1.65, z: h.z + Math.cos(F) * 1.65 };
       const yr = you.hip(release), L = Math.hypot(at0.x - yr.x, at0.z - yr.z) || 1, T = { x: yr.x + (at0.x - yr.x) / L * 0.9, z: yr.z + (at0.z - yr.z) / L * 0.9 };
       const tBack = tCross + REC.back, tSit = tCross + REC.sit;
       const dsegs = [{ clip: '78_30', from: 0.93, at: 0, idle: { amp: 0.1, period: 1.6 } }, { clip: '78_30', from: 0.05, at: tCross + 0.15, inert: 0.2 },
@@ -63,7 +63,7 @@ export const REPS = {
   rep6: practice(1.0, 1.6, { x: -2.6, z: 6.3 }),
   live: {
     simEnd: 4.1,
-    plan: { hold: [0, 0.02], gatherDur: 0.2, shotClip: 3.38, flight: 1.15, camRef: 0.8, camAngle: 0.2, camSide: 1, camH: 1.8, camPush: 0.4 },
+    plan: { hold: [0, 0.02], gatherDur: 0.2, shotClip: 3.38, flight: 1.15, camRef: 0.8, camAngle: 0.2, camSide: 1, camH: 1.8, camPush: 0.4, camTake: { side: -1, az0: 0.72, az1: 0.28, back0: 3.3, back1: 4.6, h0: 2.6, h1: 3.1, fov0: 46, fov1: 62, follow: 0.3, lookRim: 0.36 } },
     build(clips, legs) {
       const P = this.plan;
       // you: the move at full speed, and off the hop back the ball goes up to your forehead - 78_22's shot fake (the
@@ -83,7 +83,7 @@ export const REPS = {
       // back in at you (78_25's last chop steps, aimed at a spot a stride off you) - and at the top of your fake he leaves
       // his feet (124_05's jump). He comes down where he went up, a stride in front of you, as you go up
       const jumpAt = fakeTop - 0.2, hop0 = simOf(B, MOVE.hop0), run = tCross + 0.4;
-      const h = you.hip(tCross), F = you.at(tCross).yaw, at0 = { x: h.x + Math.sin(F) * 1.15, z: h.z + Math.cos(F) * 1.15 };
+      const h = you.hip(tCross), F = you.at(tCross).yaw, at0 = { x: h.x + Math.sin(F) * 1.65, z: h.z + Math.cos(F) * 1.65 };
       const hj = you.hip(jumpAt);
       const T = (p) => { const d = Math.hypot(p.x - hj.x, p.z - hj.z) || 1; return { x: hj.x + (p.x - hj.x) / d * 0.95, z: hj.z + (p.z - hj.z) / d * 0.95 }; };
       const landAt = jumpAt + (3.76 - 3.05), hl = you.hip(landAt);

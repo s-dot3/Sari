@@ -10,7 +10,7 @@ const RIM = V(0, 3.05, 0);
 export class Cam5 {
   constructor(reps) {
     this.reps = reps; this.paths = {};
-    for (const [name, rep] of Object.entries(reps)) for (const mode of rep.plan.contact ? ['finish'] : ['duel', 'rim'].concat(rep.plan.camTeam ? ['team'] : [])) this.paths[name + ':' + mode] = this.bake(rep, mode);
+    for (const [name, rep] of Object.entries(reps)) for (const mode of rep.plan.contact ? ['finish'] : ['duel', 'rim'].concat(rep.plan.camTeam ? ['team'] : [], rep.plan.camTake ? ['take'] : [], rep.plan.shotClip !== undefined ? ['shot'] : [])) this.paths[name + ':' + mode] = this.bake(rep, mode);
   }
   ideal(rep, mode, t) {
     // team: high and behind the play, on the ball and the man guarding it - the driver and you until his pass, then
@@ -24,6 +24,53 @@ export class Cam5 {
       return { pos: look.clone().add(V(C.off.x, C.off.y, C.off.z).multiplyScalar(1 + 0.45 * u)), look, fov: C.fov };
     }
     const y = rep.frame('you', t).p, d = rep.frame('d1', t).p;
+    // take: one take from the first dribble to the net. High and behind the ball handler, off his shoulder, so a
+    // cross goes left-right across the picture and his man stays in view; tight on the two of them for the move,
+    // then from the gather it rises, pulls back and tilts up to the rim, and after the release it rides the ball
+    // all the way to the net - the shot, the flight and the make in the same shot, no cut
+    if (mode === 'take') {
+      const C = rep.plan.camTake, P = rep.plan, S = rep.frame('you', P.release).p;
+      const u = smooth((t - (P.gatherAt - 0.3)) / (P.release + 0.15 - (P.gatherAt - 0.3)));
+      const k = (a, b) => a + (b - a) * u;
+      // (off his shoulder for the move; round behind him for the shot, so he and the rim share the narrow frame)
+      const away = V(S.x - RIM.x, 0, S.z - RIM.z).normalize(), a = k(C.az0 ?? 0.7, C.az1 ?? 0.3) * (C.side ?? 1);
+      const dir = V(away.x * Math.cos(a) - away.z * Math.sin(a), 0, away.x * Math.sin(a) + away.z * Math.cos(a)).normalize();
+      const anchor = y.clone().lerp(d, 0.3 * (1 - u));
+      const pos = anchor.clone().addScaledVector(dir, k(C.back0 ?? 3.1, C.back1 ?? 4.3)); pos.y = k(C.h0 ?? 2.5, C.h1 ?? 3.0);
+      const pair = y.clone().lerp(d, 0.42); pair.y = C.lookY0 ?? 0.95;
+      const shot = S.clone().lerp(V(RIM.x, 0, RIM.z), C.lookRim ?? 0.5); shot.y = C.lookY1 ?? 2.15;
+      const look = pair.lerp(shot, u);
+      // in the air: between the ball and the rim, so both stay in the picture
+      if (P.release !== undefined && !P.layup) {
+        const w = smooth((t - P.release) / 0.3) * (1 - smooth((t - (P.rim + 0.5)) / 0.6));
+        if (w > 0) { const b = rep.ball(t).pos, m = b.clone().lerp(RIM, 0.5); look.lerp(m, (C.follow ?? 0.55) * w); }
+      }
+      return { pos, look, fov: k(C.fov0 ?? 44, C.fov1 ?? 60) };
+    }
+    // shot: the duel view up to the release, then, without a cut, it swings round behind the shooter (round him, not
+    // through him), rises and tilts up to the rim and rides the ball in - the release, the flight and the make (or the
+    // miss) in one shot
+    if (mode === 'shot') {
+      const base = this.ideal(rep, 'duel', t), P = rep.plan, C = P.camShot || {};
+      // (from the release it tilts up with the ball right away, so the ball never leaves the picture)
+      const w = smooth((t - P.release) / 0.25) * (1 - smooth((t - (P.rim + 0.5)) / 0.6)), mid = w > 0 ? rep.ball(t).pos.clone().lerp(RIM, 0.5) : null;
+      if (w > 0) base.look.lerp(mid, (C.early ?? 0.35) * w);
+      const u = smooth((t - (P.release + (C.b0 ?? 0.1))) / ((C.b1 ?? 0.8) - (C.b0 ?? 0.1)));
+      if (u <= 0) return base;
+      const S = rep.frame('you', P.release).p, away = V(S.x - RIM.x, 0, S.z - RIM.z).normalize();
+      // on the side the duel camera is already on
+      if (rep._shotSide === undefined) { const o = this.ideal(rep, 'duel', P.release).pos.clone().sub(S).setY(0), r = V(away.z, 0, -away.x); rep._shotSide = Math.sign(o.dot(r)) || 1; }
+      const a = -(C.az ?? 0.3) * rep._shotSide, dir = V(away.x * Math.cos(a) - away.z * Math.sin(a), 0, away.x * Math.sin(a) + away.z * Math.cos(a)).normalize();
+      const end = S.clone().addScaledVector(dir, C.back ?? 4.6); end.y = C.h ?? 3.1;
+      const look = S.clone().lerp(V(RIM.x, 0, RIM.z), C.lookRim ?? 0.36); look.y = C.lookY ?? 2.15;
+      if (w > 0) look.lerp(mid, (C.follow ?? 0.3) * w);
+      // round him: angle, distance and height about the shooter, eased from the duel view's to these
+      const p0 = base.pos.clone().sub(S), p1 = end.clone().sub(S);
+      const th0 = Math.atan2(p0.z, p0.x); let dth = Math.atan2(p1.z, p1.x) - th0; while (dth > Math.PI) dth -= 2 * Math.PI; while (dth < -Math.PI) dth += 2 * Math.PI;
+      const th = th0 + dth * u, rr = Math.hypot(p0.x, p0.z) + (Math.hypot(p1.x, p1.z) - Math.hypot(p0.x, p0.z)) * u;
+      const pos = V(S.x + Math.cos(th) * rr, base.pos.y + (end.y - base.pos.y) * u, S.z + Math.sin(th) * rr);
+      return { pos, look: base.look.clone().lerp(look, u), fov: base.fov + ((C.fov ?? 62) - base.fov) * u };
+    }
     if (mode === 'duel') {
       // three-quarter view from one side (camAngle swings it round behind the shooter), just under head height,
       // pulled back to keep both of them in the narrow frame, tilted so their feet sit at the same place on screen
@@ -68,7 +115,7 @@ export class Cam5 {
     return { pos, look: mid.lerp(V(0.5, 2.3, 0.35), u), fov: 48 + 10 * smooth((t - 0.3) / (c.t - 0.3)) + 4 * u };
   }
   bake(rep, mode) {
-    const dt = 1 / 240, lead = mode === 'duel' ? 0.3 : 0.2, track = [], end = rep.plan.simEnd, wp = mode === 'duel' ? 3.2 : 2.2, wl = { duel: 4.2, rim: 3.4, finish: 5.5, team: 3.0 }[mode];
+    const dt = 1 / 240, lead = mode === 'duel' || mode === 'shot' ? 0.3 : mode === 'take' ? 0.25 : 0.2, track = [], end = rep.plan.simEnd, wp = mode === 'duel' || mode === 'shot' ? 3.2 : mode === 'take' ? 3.0 : 2.2, wl = { duel: 4.2, shot: 4.2, rim: 3.4, finish: 5.5, team: 3.0, take: 4.5 }[mode];
     let pos = null, look = null; const vp = V(), vl = V();
     const step = (x, v, target, om) => { const f = 1 + 2 * dt * om, oo = om * om, hoo = dt * oo, hhoo = dt * hoo, detInv = 1 / (f + hhoo); return [(f * x + dt * v + hhoo * target) * detInv, (v + hoo * (target - x)) * detInv]; };
     for (let t = 0; t <= end + 1e-6; t += dt) {

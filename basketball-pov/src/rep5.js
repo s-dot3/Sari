@@ -57,7 +57,7 @@ export class Rep {
   buildTable() {
     const rig = this.rigs.you, tr = this.tracks.you, d1 = this.tracks.d1, drig = this.rigs.d1, P0 = this.plan;
     const n = Math.ceil(P0.simEnd * HZ) + 1;
-    const T = { n, hip: [], yaw: [], wL: [], wR: [], xL: [], xR: [], yL: [], yR: [], head: [], shL: [], shR: [], elbL: [], elbR: [], ankL: [], ankR: [], youCom: [], youFeet: [], d1hip: [], d1yaw: [], d1shL: [], d1shR: [], d1head: [], d1com: [], d1feet: [] };
+    const T = { n, hip: [], yaw: [], wL: [], wR: [], legL: [], legR: [], xL: [], xR: [], yL: [], yR: [], head: [], shL: [], shR: [], elbL: [], elbR: [], ankL: [], ankR: [], youCom: [], youFeet: [], d1hip: [], d1yaw: [], d1shL: [], d1shR: [], d1head: [], d1com: [], d1feet: [] };
     const feet = { you: { L: [], R: [] }, d1: { L: [], R: [] } };
     const addFeet = (who, P) => { for (const s of ['L', 'R']) { const k = s.toLowerCase(); feet[who][s].push({ a: P.pos[k + 'tibia'].clone(), h: P.pos[k + 'hipjoint'].clone(), w: P.planted ? P.planted[s] : 0 }); } };
     const X = V(1, 0, 0), Y = V(0, 1, 0);
@@ -72,6 +72,7 @@ export class Rep {
       T.head.push(rig.P.Head.clone()); T.shL.push(rig.P.L_UpperArm.clone()); T.shR.push(rig.P.R_UpperArm.clone());
       T.elbL.push(rig.P.L_Forearm.clone()); T.elbR.push(rig.P.R_Forearm.clone());
       T.ankL.push(P.pos.ltibia.clone()); T.ankR.push(P.pos.rtibia.clone());
+      for (const s of ['L', 'R']) T['leg' + s].push([rig.P[s + '_Thigh'].clone(), rig.P[s + '_Calf'].clone(), rig.P[s + '_Foot'].clone(), (rig.P[s + '_Toe0'] || rig.P[s + '_Foot']).clone()]);
       const yh = P.pos.lhipjoint.clone().add(P.pos.rhipjoint).multiplyScalar(0.5);
       T.youCom.push(yh.multiplyScalar(0.45).addScaledVector(P.pos.thorax, 0.3).addScaledVector(P.pos.head, 0.08).addScaledVector(P.pos.lfemur, 0.085).addScaledVector(P.pos.rfemur, 0.085));
       T.youFeet.push([P.pos.ltibia.clone(), P.pos.rtibia.clone(), P.pos.ltoes.clone(), P.pos.rtoes.clone()]);
@@ -183,7 +184,51 @@ export class Rep {
     for (let i = Math.round(P0.release * HZ); i < T.n; i++) if (T.ankL[i].y < fl + 0.03 || T.ankR[i].y < fr + 0.03) { P0.land = i / HZ; break; }
     if (P0.land === undefined) P0.land = P0.release + 0.35;
   }
-  onPalm(side, t) { const p = this.palm(side, t); return p.c.clone().addScaledVector(UP, -(BALL_R + 0.012)).addScaledVector(this.fwd(t), 0.015); }
+  onPalm(side, t) { const p = this.palm(side, t); return this.clearLegs(t, p.c.clone().addScaledVector(UP, -(BALL_R + 0.012)).addScaledVector(this.fwd(t), 0.015)); }
+  // The ball against his body at t: the gap (m) between its surface and the nearest of his thighs, shins, shoes
+  // (on the locked feet), pelvis, trunk and head - capsules - and the way out from there
+  bodyCaps(i) {
+    if (!this._caps) this._caps = [];
+    if (this._caps[i]) return this._caps[i];
+    const T = this.T, caps = [], f0 = T.fwd[i];
+    const add = (p, q, r) => caps.push([p.x, p.y, p.z, q.x - p.x, q.y - p.y, q.z - p.z, r]);
+    const legs = {};
+    for (const s of ['L', 'R']) {
+      const [h, k, a, o] = T['leg' + s][i], off = this.lock.you[s][i];
+      const kk = k.clone().addScaledVector(off, 0.5), aa = a.clone().add(off), oo = o.clone().add(off);
+      const f = oo.clone().sub(aa).setY(0); if (f.lengthSq() < 1e-6) f.copy(f0); f.normalize();
+      add(h, kk, 0.075); add(kk, aa, 0.055); add(aa, oo, 0.05); // thigh, shin, top of the shoe
+      add(V(aa.x, 0.045, aa.z).addScaledVector(f, -0.07), V(oo.x, 0.04, oo.z).addScaledVector(f, 0.06), 0.045); // the sole, heel to toe
+      legs[s] = h;
+    }
+    const sh = T.shL[i].clone().add(T.shR[i]).multiplyScalar(0.5), pel = legs.L.clone().add(legs.R).multiplyScalar(0.5);
+    add(legs.L, legs.R, 0.1); // pelvis
+    add(pel, sh.clone().addScaledVector(UP, -0.12), 0.13); // trunk
+    const hd = T.head[i].clone().addScaledVector(UP, 0.09); add(hd, hd, 0.11); // skull
+    return (this._caps[i] = caps);
+  }
+  bodyNear(t, B) {
+    const caps = this.bodyCaps(clamp(Math.round(t * HZ), 0, this.T.n - 1));
+    let g = Infinity, ox = 1, oy = 0, oz = 0;
+    for (const [px, py, pz, dx, dy, dz, r] of caps) {
+      const L2 = dx * dx + dy * dy + dz * dz, u = L2 > 1e-9 ? clamp(((B.x - px) * dx + (B.y - py) * dy + (B.z - pz) * dz) / L2, 0, 1) : 0;
+      const wx = B.x - px - dx * u, wy = B.y - py - dy * u, wz = B.z - pz - dz * u, d = Math.sqrt(wx * wx + wy * wy + wz * wz), gg = d - r - BALL_R;
+      if (gg < g) { g = gg; if (d > 1e-9) { ox = wx / d; oy = wy / d; oz = wz / d; } }
+    }
+    return { gap: g, out: V(ox, oy, oz) };
+  }
+  legNear(t, B) { return this.bodyNear(t, B); }
+  // a ball in his hands never sits inside him: eased out sideways till it's 1 cm clear (a few passes, since out of
+  // one part can be into another)
+  clearLegs(t, B) {
+    if (!this.T.legL) return B;
+    for (let k = 0; k < 4; k++) {
+      const n = this.bodyNear(t, B); if (n.gap >= 0.01) break;
+      const o = n.out.clone().setY(0); if (o.lengthSq() < 1e-6) o.copy(this.fwd(t));
+      B.addScaledVector(o.normalize(), 0.01 - n.gap + 0.002);
+    }
+    return B;
+  }
   // both hands on it: between the palms, kept in front of the body
   holdBall(t) {
     const L = this.palm('L', t).c, R = this.palm('R', t).c, B = L.clone().add(R).multiplyScalar(0.5);
@@ -211,9 +256,26 @@ export class Rep {
     for (let k = 0; k < P.length; k++) {
       const r = P[k].s1, B0 = this.onPalm(P[k].hand, r), last = k + 1 >= P.length;
       const c = last ? P0.gatherAt : P[k + 1].catch, B1 = last ? this.gatherBall(c) : this.onPalm(P[k + 1].hand, c);
-      const tb = r + 0.4 * (c - r), F = V(B0.x + (B1.x - B0.x) * 0.4, BALL_R, B0.z + (B1.z - B0.z) * 0.4);
-      this.flights.push({ r, tb, c, B0, F, B1 });
+      const F0 = V(B0.x + (B1.x - B0.x) * 0.4, BALL_R, B0.z + (B1.z - B0.z) * 0.4);
+      this.flights.push({ r, c, B0, B1, ...this.fitBounce(r, c, B0, B1, F0) });
     }
+  }
+  // A dribble from the hand (B0 at r) to the floor and up to the next hand (B1 at c): the bounce goes where the
+  // two ballistic arcs keep the ball off his legs and shoes all the way (through his legs, across in front of them),
+  // as near as it can to 40% of the way across and 40% of the way through
+  fitBounce(r, c, B0, B1, F0) {
+    const path = (F, tb, t) => t < tb ? ballistic(B0, F, r, tb, t) : ballistic(F, B1, tb, c, t);
+    const ts = []; for (let t = r + 0.02; t < c - 0.02; t += 1 / 120) ts.push(t);
+    const gap = (F, tb) => { let g = Infinity; for (const t of ts) { g = Math.min(g, this.legNear(t, path(F, tb, t)).gap); if (g < -0.2) break; } return g; };
+    const tb0 = r + 0.4 * (c - r), g0 = gap(F0, tb0);
+    if (g0 >= 0.015) return { F: F0, tb: tb0, gap: g0 };
+    let best = { F: F0, tb: tb0, gap: g0, cost: Infinity };
+    for (const k of [0.3, 0.35, 0.4, 0.45, 0.5, 0.55]) for (let dx = -0.33; dx <= 0.331; dx += 0.03) for (let dz = -0.33; dz <= 0.331; dz += 0.03) {
+      const F = V(F0.x + dx, BALL_R, F0.z + dz), tb = r + k * (c - r), g = gap(F, tb);
+      const cost = dx * dx + dz * dz + 0.3 * (k - 0.4) * (k - 0.4) + (g < 0.015 ? 50 + 20 * (0.015 - g) : 0);
+      if (cost < best.cost) best = { F, tb, gap: g, cost };
+    }
+    return best;
   }
   // both hands on the ball's sides at B (fingers up and forward)
   grip(B, t, w = 1) {
@@ -248,7 +310,7 @@ export class Rep {
     const P0 = this.plan, P = this.pushes, hold0 = P0.hold ? P0.hold[1] : -1;
     const from = P0.pass ? this.catchPoint() : (P.length ? this.gatherBall(P0.gatherAt) : this.holdAt(Math.max(hold0, 0)));
     const g = smooth((t - P0.gatherAt) / P0.gatherDur);
-    return (t < P0.gatherAt ? this.holdAt(t) : from.clone()).lerp(this.holdBall(t), g);
+    return this.clearLegs(t, (t < P0.gatherAt ? this.holdAt(t) : from.clone()).lerp(this.holdBall(t), g));
   }
   // where the two-hand hold has the ball and both arms at the dip, so the shot starts exactly from there
   dip() {
@@ -307,6 +369,7 @@ export class Rep {
     if (t < tS) {
       const u = clamp((t - tD) / (tS - tD), 0, 1), s2 = smooth((t - tD) / ((tS - tD) * 0.7));
       B = S.clone().add(herm(b0, bS, bS.clone().sub(b0).multiplyScalar(0.25), vS.clone().multiplyScalar(tS - tD), u)).addScaledVector(f, 0.05 * Math.sin(Math.PI * u));
+      this.clearLegs(t, B); // (up the front of him, never through his chest)
       d = nlerp(k.R.dir, set.d, s2); n = nlerp(k.R.palm, set.n, s2);
       // elbow: from where the performer had it to under the hand
       pole = nlerp(k.poleR, under(wristOf(B, d, n)).normalize(), s2);
@@ -355,7 +418,7 @@ export class Rep {
       return { B, state: 'pass', ov };
     }
     const hold0 = P0.hold ? P0.hold[1] : -1;
-    if (P0.hold && t < hold0) { const B = this.holdAt(t); return { B, state: 'held', ov: this.grip(B, t, 0.9) }; }
+    if (P0.hold && t < hold0) { const B = this.clearLegs(t, this.holdAt(t)); return { B, state: 'held', ov: this.grip(B, t, 0.9) }; }
     if (P.length && t < P0.gatherAt) {
       for (let k = 0; k < P.length; k++) if (t >= P[k].catch && t < P[k].s1) return { B: this.onPalm(P[k].hand, t), state: 'held', ov: {} };
       if (t < P[0].catch) { // from the hold into the first push

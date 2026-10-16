@@ -280,7 +280,7 @@ window.renderFrame = (i) => {
   return performance.now() - t0;
 };
 // stills for checks: renderSim(rep, st, mode, behind, show) with the HUD as it would be in the nearest frame of that rep
-window.renderSim = (name, st, mode = 'duel', behind = false, show = undefined) => {
+window.renderSim = (name, st, mode = 'take', behind = false, show = undefined) => {
   const rep = reps[name];
   renderer.setRenderTarget(rtAccum); renderer.setClearColor(0x000000, 1); renderer.clear();
   for (let k = 0; k < SUB; k++) renderSub(rep, mode, st, k, k === 0);
@@ -322,5 +322,5 @@ window.events = () => {
 };
 
 // first draws compile programs and allocate shadow maps (and log a GL warning once): do that before any real frame
-renderSub(Object.values(reps)[0], 'duel', 0.5, 0, true); present(0, 0, -1);
+renderSub(Object.values(reps)[0], 'take', 0.5, 0, true); present(0, 0, -1);
 window.__ready = true;

@@ -1,6 +1,7 @@
 // v9 "lockdown" sequence at 30 fps: title, the reps (live into his move, a freeze on what you did, slow motion through
-// his shot and your contest, a cut to the rim for the miss), outro. Symbolic times ('@bite') are measured moments of
-// each rep, resolved once the reps are built; {rep.key} in a caption is a measured number.
+// his shot and your contest, the camera swinging round behind him to follow the ball off the rim - no cut), outro.
+// Symbolic times ('@bite') are measured moments of each rep, resolved once the reps are built; {rep.key} in a caption
+// is a measured number.
 export const FPS = 30;
 export const REP_TITLES = {
   staydown: '1 · STAY DOWN',
@@ -8,28 +9,28 @@ export const REP_TITLES = {
   help: '3 · HELP AND RECOVER',
 };
 export const SEQ = [
-  { card: 'intro', rep: 'staydown', cam: 'duel', freeze: 0.1, dur: 3.4 },
+  { card: 'intro', rep: 'staydown', cam: 'shot', freeze: 0.1, dur: 3.4 },
 
-  { rep: 'staydown', cam: 'duel', from: 0.0, to: '@bite', rate: 0.75, caption: 'Same move that beat the slow guy\'s man.<br><b>Close out short, hands up.</b>' },
-  { rep: 'staydown', cam: 'duel', freeze: '@bite', dur: 2.6, caption: 'He sells the shot. <b>Hand up,<br>feet down:</b> you didn\'t bite.' },
-  { rep: 'staydown', cam: 'duel', from: '@bite', to: '@shot', rate: 0.55, caption: 'He breaks. <b>Slide with him</b> and beat<br>him to the spot. Make him shoot over you.' },
-  { rep: 'staydown', cam: 'rim', from: '@shot', to: '@miss', rate: 0.8 },
-  { rep: 'staydown', cam: 'rim', freeze: '@miss', dur: 2.2, caption: 'Contested at {staydown.sep} ft. <b>Miss.</b>' },
+  { rep: 'staydown', cam: 'shot', from: 0.0, to: '@bite', rate: 0.75, caption: 'Same move that beat the slow guy\'s man.<br><b>Close out short, hands up.</b>' },
+  { rep: 'staydown', cam: 'shot', freeze: '@bite', dur: 2.6, caption: 'He sells the shot. <b>Hand up,<br>feet down:</b> you didn\'t bite.' },
+  { rep: 'staydown', cam: 'shot', from: '@bite', to: '@shot', rate: 0.55, caption: 'He breaks. <b>Slide with him</b> and beat<br>him to the spot. Make him shoot over you.' },
+  { rep: 'staydown', cam: 'shot', from: '@shot', to: '@miss', rate: 0.8 },
+  { rep: 'staydown', cam: 'shot', freeze: '@miss', dur: 2.2, caption: 'Contested at {staydown.sep} ft. <b>Miss.</b>' },
 
-  { rep: 'mirror', cam: 'duel', from: 0.0, to: '@bite', rate: 0.75, caption: 'He attacks. <b>Hold your ground</b><br>an arm\'s length off.' },
-  { rep: 'mirror', cam: 'duel', freeze: '@bite', dur: 2.6, caption: 'Cross and back: <b>slide, don\'t lunge.</b><br>Chest in front, hands off the ball.' },
-  { rep: 'mirror', cam: 'duel', from: '@bite', to: '@shot', rate: 0.45, caption: 'Nowhere to go: he has to rise<br><b>with you right there.</b>' },
-  { rep: 'mirror', cam: 'rim', from: '@shot', to: '@miss', rate: 0.8 },
-  { rep: 'mirror', cam: 'rim', freeze: '@miss', dur: 2.2, caption: 'Contested at {mirror.sep} ft. <b>Miss.</b>' },
+  { rep: 'mirror', cam: 'shot', from: 0.0, to: '@bite', rate: 0.75, caption: 'He attacks. <b>Hold your ground</b><br>an arm\'s length off.' },
+  { rep: 'mirror', cam: 'shot', freeze: '@bite', dur: 2.6, caption: 'Cross and back: <b>slide, don\'t lunge.</b><br>Chest in front, hands off the ball.' },
+  { rep: 'mirror', cam: 'shot', from: '@bite', to: '@shot', rate: 0.45, caption: 'Nowhere to go: he has to rise<br><b>with you right there.</b>' },
+  { rep: 'mirror', cam: 'shot', from: '@shot', to: '@miss', rate: 0.8 },
+  { rep: 'mirror', cam: 'shot', freeze: '@miss', dur: 2.2, caption: 'Contested at {mirror.sep} ft. <b>Miss.</b>' },
 
   { rep: 'help', cam: 'team', from: 0.0, to: '@bite', rate: 0.75, caption: 'Your teammate gets beat.<br><b>You\'re the help.</b>' },
   { rep: 'help', cam: 'team', freeze: '@bite', dur: 2.6, caption: 'Sprint over and <b>stop the ball</b><br>before he gets to the rim.' },
   { rep: 'help', cam: 'team', from: '@bite', to: '@pass', rate: 0.5, caption: 'He kicks it to your man.<br><b>Go on the pass.</b>' },
-  { rep: 'help', cam: 'duel', from: '@pass', to: '@shot', rate: 0.5, caption: 'Short steps the last stride, <b>hand high.</b><br>Don\'t fly by him.' },
-  { rep: 'help', cam: 'rim', from: '@shot', to: '@miss', rate: 0.8 },
-  { rep: 'help', cam: 'rim', freeze: '@miss', dur: 2.2, caption: 'Contested at {help.sep} ft. <b>Miss.</b><br>One stop, two of you.' },
+  { rep: 'help', cam: 'shot', from: '@pass', to: '@shot', rate: 0.5, caption: 'Short steps the last stride, <b>hand high.</b><br>Don\'t fly by him.' },
+  { rep: 'help', cam: 'shot', from: '@shot', to: '@miss', rate: 0.8 },
+  { rep: 'help', cam: 'shot', freeze: '@miss', dur: 2.2, caption: 'Contested at {help.sep} ft. <b>Miss.</b><br>One stop, two of you.' },
 
-  { card: 'outro', rep: 'help', cam: 'rim', freeze: '@miss', dur: 3.6 },
+  { card: 'outro', rep: 'help', cam: 'shot', freeze: '@miss', dur: 3.6 },
 ];
 
 // resolve the measured moments: '@bite' (his move and your answer), '@pass' (just after the kick-out), '@shot' (just

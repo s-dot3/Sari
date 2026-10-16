@@ -32,7 +32,7 @@ function contestTracks(clips, legs, you, tRef, gap, takeoff, side = 0, at = null
 export const REPS = {
   iso: {
     simEnd: 4.6,
-    plan: { hold: [0, 1.6], pushHand: 'R', gatherDur: 0.18, shotClip: 3.38, flight: 1.15, camRef: 2.0, camAngle: 0.25, camSide: 1, camH: 1.6, camPush: 0.7 },
+    plan: { hold: [0, 1.6], pushHand: 'R', gatherDur: 0.18, shotClip: 3.38, flight: 1.15, camRef: 2.0, camAngle: 0.25, camSide: 1, camH: 1.6, camPush: 0.7, camShot: { b0: 0.12, b1: 0.85 } },
     build(clips, legs) {
       const P = this.plan;
       // you: one continuous take (124_05) - triple threat, sizing him up (its stance, kept alive), then one hard dribble,
@@ -58,7 +58,7 @@ export const REPS = {
   },
   drift: {
     simEnd: 4.4,
-    plan: { hold: [0, 0.05], pushHand: 'R', gatherDur: 0.18, shotClip: 3.38, flight: 1.1, camRef: 1.4, camAngle: 0.25, camSide: 1, camH: 1.6, camPush: 0.7,
+    plan: { hold: [0, 0.05], pushHand: 'R', gatherDur: 0.18, shotClip: 3.38, flight: 1.1, camRef: 1.4, camAngle: 0.25, camSide: 1, camH: 1.6, camPush: 0.7, camShot: { b0: 0.12, b1: 0.85 },
       miss: { long: true, side: 0.05, kick: 0.25 } },
     build(clips, legs) {
       const P = this.plan;

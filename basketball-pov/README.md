@@ -91,12 +91,14 @@ Sources:
 ## How v11 is made
 
 - **Engine:** the v5-v10 page and rep engine. On top of it:
+  - **One take per rep** (`take` in `src/camera5.js`): the camera stays on the play from the first dribble to the net, with no cut to the rim. For the move it sits high behind the ball handler's right shoulder, so the cross goes left-right across the picture and his man stays in view. From the gather it rises, pulls back, swings round behind him and tilts up to the rim, and after the release it rides the ball into the net. The shot, the flight and the make are in the same shot.
+  - **The ball never goes through him** (`src/rep5.js`): his thighs, shins, shoes, pelvis, trunk and skull are capsules. Every dribble's bounce is placed where both arcs, hand to floor and floor to hand, clear his legs and feet, as close as it can to the natural spot. A ball in his hands, or coming up the front of him into the shot, is eased out to a centimetre clear.
   - The present shader splits the picture for the curtain and grades the behind view dark.
   - A 2D overlay draws the players' joints as lines (projected from the rig), the ball, the eyes beam (pinned to the frame edge with an arrowhead when the rim is out of it), the rep 1 ghost, his man's weight and the options.
   - The HUD strip shows the move's parts as cards, grouped into chunks per rep. A chunk lights all at once.
 - **Motion:**
   - Every rep is CMU 06_13's between-the-legs, cross, cross back and hop back, then 124_05's pull-up. Rep 1 plays the dribble moves at 0.8 and the hop at 1.0, rep 3 at 0.9 and 1.3, rep 6 at 1.0 and 1.6.
-  - The defender is 78_30's stance, a slide with the cross, and its slide back toward where you'll shoot.
+  - The defender is 78_30's stance, a slide with the cross, and its slide back toward where you'll shoot. He picks you up 1.35 m off at the cross, so he never ends up on top of you.
   - Live, you add 78_22's shot fake off the hop back. He steps back in (78_25's last chop steps, aimed a stride off you) and leaves his feet on the fake (124_05's jump), coming down a stride in front of you as you rise.
 - **Files:** `src/play11.js`, `src/hud11.js`, `src/hud11.css`, `src/timeline11.js`, `src/main11.js`.
 
