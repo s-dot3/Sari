@@ -133,7 +133,7 @@ export const REPS = {
   // sliding the other way
   stepback: {
     simEnd: 3.2,
-    plan: { hold: [0, 0.02], gatherDur: 0.2, shotClip: 3.38, flight: 1.15, camRef: 0.8, camAngle: 1.25, camSide: 1, camH: 2.5 },
+    plan: { hold: [0, 0.02], gatherDur: 0.2, shotClip: 3.38, flight: 1.15, camRef: 0.8, camAngle: 0.85, camSide: 1, camH: 2.5 }, // (off his shoulder: the cross goes across the picture and his man stays in view)
     build(clips, legs) {
       const P = this.plan;
       // you: 06_13 (low, quick freestyle dribbling) from 28.6: attacking, between the legs (28.80), the cross to
