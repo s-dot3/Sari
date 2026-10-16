@@ -52,7 +52,7 @@ export const REPS = {
       // face), aimed to stop a stride in front of his pull-up, then square up and contest
       const t0 = 0.74, h = you.hip(t0), F = you.at(t0).yaw, fw = { x: Math.sin(F), z: Math.cos(F) }, lf = { x: Math.cos(F), z: -Math.sin(F) };
       const at0 = { x: h.x + fw.x * 1.3 + lf.x * 0.3, z: h.z + fw.z * 1.3 + lf.z * 0.3 };
-      const goal = inFront(you, release, 0.55), tGo = C.at + 0.22;
+      const goal = inFront(you, release, 1.0), tGo = C.at + 0.22; // (a contest, not a collision: his chest an arm's length off)
       const close = { clip: '78_25', from: 1.99 - t0, at: 0 };
       const probe = anchoredTrack(clips, [close], legs.d1, t0, { ...at0, yaw: yawTo(at0, h) }), q = probe.hip(tGo);
       // (start the slide where what's left of it covers the ground to that spot; played to land just before his release)

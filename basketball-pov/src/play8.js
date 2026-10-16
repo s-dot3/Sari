@@ -146,9 +146,10 @@ export const REPS = {
       const tOff = simOf(segs[2], 3.17), SPOT = { x: -2.6, z: 6.3 };
       const you = anchoredTrack(clips, segs, legs.you, tOff, { ...SPOT, yaw: yawTo(SPOT, RIM) });
       const release = simOf(segs[2], 3.38), tCross = simOf(A, 29.18);
-      // him: a stride off, square; slides with the first cross (78_30's slide to his right, from its start, a
-      // reaction time after the cross) and is still going that way when you hop back; stops and comes back late
-      const h = you.hip(tCross), F = you.at(tCross).yaw, at0 = { x: h.x + Math.sin(F) * 1.15, z: h.z + Math.cos(F) * 1.15 };
+      // him: square, 1.65 m off at the cross (both crouched, heads forward: that keeps them apart); slides with the
+      // first cross (78_30's slide to his right, from its start, a reaction time after the cross) and is still going
+      // that way when you hop back; stops and comes back late
+      const h = you.hip(tCross), F = you.at(tCross).yaw, at0 = { x: h.x + Math.sin(F) * 1.65, z: h.z + Math.cos(F) * 1.65 };
       const dsegs = [{ clip: '78_30', from: 0.93, at: 0, idle: { amp: 0.1, period: 1.6 } }, { clip: '78_30', from: 0.05, at: tCross + 0.15, inert: 0.2 }];
       const d1 = anchoredTrack(clips, dsegs, legs.d1, tCross, { ...at0, yaw: yawTo(at0, h) });
       P.contest = [{ from: release - 0.1, rise: 0.25, to: release + 0.5, side: 'L', reach: 0.05, late: true }];
