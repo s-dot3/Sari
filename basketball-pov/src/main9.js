@@ -1,6 +1,6 @@
-// v9 "lockdown": the v5 film-room page (practice gym, anatomical skeletons, floor balance meter, timing strip,
-// freezes, slow motion, rim cut) on the v9 reps - you guarding a good ball handler, and helping as a team; the meter
-// is yours now. 1080x1920 at 30 fps with motion blur.
+// v9 "lockdown": the v5 film-room page (practice gym, anatomical skeletons, floor balance meter, timing strip, freezes,
+// slow motion, the shot in one take) on the v9 reps - you guarding a good ball handler, and helping as a team; the
+// meter is yours now. 1080x1920 at 30 fps with motion blur.
 import * as THREE from 'three';
 import { buildGym, gymEnvironment } from './gym.js';
 import { loadTemplates, makePlayerMesh, Rig } from './player.js';

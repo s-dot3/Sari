@@ -1,6 +1,6 @@
 // v8 "make him move": the v5 film-room page (practice gym, anatomical skeletons, floor balance meter, timing strip,
-// freezes, slow motion, rim cut) on the v8 reps - a shooter who isn't fast beating his man with fakes, changes of
-// pace and the stop. 1080x1920 at 30 fps with motion blur.
+// freezes, slow motion, the shot in one take) on the v8 reps - a shooter who isn't fast beating his man with fakes,
+// changes of pace and the stop. 1080x1920 at 30 fps with motion blur.
 import * as THREE from 'three';
 import { buildGym, gymEnvironment } from './gym.js';
 import { loadTemplates, makePlayerMesh, Rig } from './player.js';

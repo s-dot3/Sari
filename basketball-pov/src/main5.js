@@ -1,7 +1,7 @@
 // v5 "read his weight": a vertical film-room clip in the practice gym with the anatomical skeletons. Four reps -
 // a contested make, a pull-up over a defender on his heels, one over a defender leaning, and a contact finish at the
 // rim - each with a floor balance meter under the defender, a timing strip, freeze frames with the coaching point,
-// slow motion through the rise and a cut to the rim for the result. 1080x1920 at 30 fps with motion blur.
+// slow motion through the rise and the ball followed to the rim in the same take. 1080x1920 at 30 fps with motion blur.
 import * as THREE from 'three';
 import { buildGym, gymEnvironment } from './gym.js';
 import { loadTemplates, makePlayerMesh, Rig } from './player.js';

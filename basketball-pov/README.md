@@ -72,9 +72,9 @@ what he's running, one card per call.
 
 | Rep | Real life | Behind the curtain |
 |---|---|---|
-| 1 · Thinking it | Slow, and short. | Five steps, five separate calls, eyes on the ball. The hop back takes 0.50 s, so his man gets back (2.9 ft). |
+| 1 · Thinking it | Slow, and short. | Five steps, five separate calls, eyes on the ball. The hop back takes 0.50 s, so his man gets back (3.2 ft). |
 | 2 · Wiring it | Quicker, and it goes. | He fixes one thing a rep: the hop is 0.38 s. Rep 1 is a dashed ghost at the same moment, still a step behind. Two chunks now. |
-| 3 · Owning it | Full speed, wet. | One chunk, one call, so his eyes come up to his man's hips. A 0.31 s hop: gone before his man is back (4.3 ft). |
+| 3 · Owning it | Full speed, wet. | One chunk, one call, so his eyes come up to his man's hips. A 0.31 s hop: gone before his man is back (5.4 ft). |
 | 4 · Making it his | Live: the step-back, a fake, and he rises. | His man has learned it too and steps right back in on the step-back. Read: his weight's coming at you. So he flips it: he sells the step-back shot with a piece he already owns, the shot fake, gets him off his feet, and rises as he comes down. |
 
 Between rep 3 and rep 6 he sleeps on it.
@@ -124,7 +124,7 @@ The numbers come from:
 
 ## How v10 is made
 
-- **Engine:** the v5/v8/v9 page and rep engine, plus a read of your base for the floor meter and strip, footprints for the 1-2, height tags on the release freeze, and a long miss off the back rim. The base read has three parts. On the way in, it's how fast you're still going. At the push-off, it's whether your balance point (the extrapolated centre of mass) is back inside your feet. In the air, it's how fast you're floating.
+- **Engine:** the v5/v8/v9 page and rep engine, plus a read of your base for the floor meter and strip, footprints for the 1-2, height tags on the release freeze, and a long miss off the back rim. The base read has three parts. On the way in, it's how fast you're still going. At the push-off, it's whether your balance point (the extrapolated centre of mass) is back inside your feet. In the air, it's how fast you're floating. Each shot is one take: the duel view swings round behind the shooter on the release (`shot` in `src/camera5.js`) and follows the ball to the rim, with no cut. The ball is kept clear of his body (`src/rep5.js`).
 - **Motion:** 124_05 for both shots: its triple threat, one-dribble pull-up and jump, with the 60° turn of its catch taken out so you face him the whole way. 78_32's drive leads into the drift: you brake through 124_05's 1-2 without stopping, and the jump still carries 1.3 m/s forward. His contest is 78_30's stance into 124_05's jump, a reaction time after yours.
 - **Files:** `src/play10.js`, `src/hud10.js`, `src/hud10.css`, `src/timeline10.js`, `src/main10.js`.
 
@@ -135,13 +135,13 @@ front, red once you're beat; the strip marks the contest and how far your hand w
 
 | Rep | What it shows |
 |---|---|
-| 1 · Stay down | The same head fake that beat the slow guy's man. You close out short and stop, hands up and feet down, so the fake gets nothing. He breaks; you slide with him, beat him to the spot and contest the pull-up at 3.5 ft. Miss. |
+| 1 · Stay down | The same head fake that beat the slow guy's man. You close out short and stop, hands up and feet down, so the fake gets nothing. He breaks; you slide with him, beat him to the spot and contest the pull-up at 4.5 ft, an arm's length off. Miss. |
 | 2 · Mirror the cross | He attacks with a cross. You hold a cushion, slide with the cross instead of lunging at it, chest in front, and he has to rise with you right there: 2.8 ft. Miss. |
 | 3 · Help and recover | A driver beats your teammate. You sprint over from the gap and stop the ball; he jump-stops and kicks it out to your man. You go on the pass, short steps the last stride, hand high: 2.4 ft. Miss. |
 
 ## How v9 is made
 
-- **Engine:** the v5/v8 page and rep engine, plus a miss off the front of the rim (reflected off the ring, then gravity, floor bounces and a roll), a rep that hands its ball off with a pass (`passOut`), and a fixed high team camera. The floor meter's colours are inverted, since its player is you.
+- **Engine:** the v5/v8 page and rep engine, plus a miss off the front of the rim (reflected off the ring, then gravity, floor bounces and a roll), a rep that hands its ball off with a pass (`passOut`), and a fixed high team camera. The floor meter's colours are inverted, since its player is you. Each shot is one take: the duel view swings round behind the shooter on the release (`shot` in `src/camera5.js`) and follows the ball to the rim, with no cut. The ball is kept clear of his body (`src/rep5.js`).
 - **Team rep:** two reps share your track. The first has the driver's ball (78_32's drive, 124_05's jump stop) until his pass; the second takes it from his hands to your man (124_05's catch and shoot, its turn trimmed to the pass angle). Your beaten teammate (78_25) and the driver are extra players.
 - **Motion:** 78_22 and 124_05 for the head fake; 06_13 and 124_05 for the cross; 78_25, 78_26 and 78_30 for your closeouts, help and slides, each slide sized to the ground you need to cover.
 - **Files:** `src/play9.js`, `src/hud9.js`, `src/hud9.css`, `src/timeline9.js`, `src/main9.js`.
@@ -157,7 +157,7 @@ while it's going the wrong way, with the shot marked and the closest-defender di
 | 1 · Head fake | He closes out hard. You sell the shot (ball to the forehead, eyes on the rim) and he leaves his feet. He's in the air 0.6 s and can't change direction, so one hard dribble takes you by him; stop and rise, 4.8 ft open. |
 | 2 · Shoulder fake | He's quicker. You jab and dip your shoulder left, he slides 0.9 m that way, and you go right. He has to stop, re-plant and come back: the shot goes up 6.7 ft open. |
 | 3 · Hesi pull-up | He runs with you, a half step ahead. You stop on a dime. He needs about 0.22 s just to see it, which at your 3.2 m/s is 0.7 m before he even brakes, and he goes on by: 5.0 ft. |
-| 4 · Step-back | You attack, he sits down and slides to cut off the cross. You snatch it back and hop back while he's still sliding the other way: 6.0 ft. |
+| 4 · Step-back | You attack, he sits down and slides to cut off the cross. You snatch it back and hop back while he's still sliding the other way: 7.1 ft. |
 
 The numbers come from:
 
@@ -166,7 +166,7 @@ The numbers come from:
 
 ## How v8 is made
 
-- **Engine:** the v5 page and rep engine (`src/rep5.js`, `src/camera5.js`, `src/meter5.js`), extended for fakes: the ball rides both hands through a shot fake (`holdHands`), the eyes stay on the rim through it (`lookRim`), a forced dribble hand (`pushHand`), several contest windows, and a jump that carries the closeout's momentum through the air (`compress.carry` in `src/animator.js`).
+- **Engine:** the v5 page and rep engine (`src/rep5.js`, `src/camera5.js`, `src/meter5.js`), extended for fakes: the ball rides both hands through a shot fake (`holdHands`), the eyes stay on the rim through it (`lookRim`), a forced dribble hand (`pushHand`), several contest windows, and a jump that carries the closeout's momentum through the air (`compress.carry` in `src/animator.js`). Each shot is one take: the duel view swings round behind the shooter on the release (`shot` in `src/camera5.js`) and follows the ball to the rim, with no cut. The ball is kept clear of his body (`src/rep5.js`).
 - **Motion:** whole real takes (CMU mocap), every pull-up the same 124_05 jump shot.
   - Head fake: 78_22 (fake shot, break right), the rip-through played quick. The defender is 78_25's closeout, 124_05's jump flying at you, then two slides of 78_30.
   - Shoulder fake: 78_20 (feint left, move right), played a touch slow. The defender bites with 78_30's slide and has to come back.
@@ -269,7 +269,7 @@ The numbers come from:
 ## v5: what it shows
 
 A film-room breakdown on reading the defender's weight. Each rep plays near full speed into the read, freezes on the
-coaching point, plays the rise in slow motion and cuts to the rim for the result.
+coaching point, plays the rise in slow motion and follows the ball to the rim in the same take.
 
 | Rep | The read |
 |---|---|
@@ -313,6 +313,7 @@ The numbers come from:
 - **Balance:** the defender's centre of mass from his hips, thorax, head and thighs, and the extrapolated centre of mass (XcoM = CoM + v/ω₀, ω₀ = √(g/l)), measured against his feet. A closeout is read by phase: sprinting, chop steps, then balanced. A help defender is set once he has stopped moving.
 - **Overlays and edit:** `src/meter5.js` (floor meter), `src/hud5.js` and `src/hud5.css` (titles, captions, weight panel, contact burst, cards), `src/timeline5.js` (the edit), `src/camera5.js` (cameras).
   - The duel camera keeps its side for the whole rep, so it never swings across the players.
+  - Each shot is one take: on the release the duel view swings round behind the shooter and follows the ball to the rim (`shot` mode), so the release, the flight and the make are in the same shot.
   - The finish is filmed from the baseline.
 - **Rendering:** `src/main5.js`, with the same skeletons, gym and motion blur as v4 (2 sub-frames). A freeze is rendered once and only re-graded for its other frames.
 - **Audio:** `tools/audio_gym.py`, with the glass, the body contact, the whistle and a freeze accent.

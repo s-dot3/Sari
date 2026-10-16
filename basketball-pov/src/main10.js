@@ -1,7 +1,7 @@
-// v10 "shoot over him": the v5 film-room page (practice gym, anatomical skeletons, timing strip, freezes, slow
-// motion, rim cut) on the v10 reps - an iso pull-up over a good contest, in three beats. The floor meter is the
-// shooter's own base now, his 1-2 is drawn on the floor (v6's footprints), and at the release two tags give the
-// ball's height and the defender's hand. 1080x1920 at 30 fps with motion blur.
+// v10 "shoot over him": the v5 film-room page (practice gym, anatomical skeletons, timing strip, freezes, slow motion,
+// the shot in one take) on the v10 reps - an iso pull-up over a good contest, in three beats. The floor meter is the
+// shooter's own base now, his 1-2 is drawn on the floor (v6's footprints), and at the release two tags give the ball's
+// height and the defender's hand. 1080x1920 at 30 fps with motion blur.
 import * as THREE from 'three';
 import { buildGym, gymEnvironment } from './gym.js';
 import { loadTemplates, makePlayerMesh, Rig } from './player.js';
