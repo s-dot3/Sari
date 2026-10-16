@@ -270,11 +270,16 @@ export class Rep {
     const tb0 = r + 0.4 * (c - r), g0 = gap(F0, tb0);
     if (g0 >= 0.015) return { F: F0, tb: tb0, gap: g0 };
     let best = { F: F0, tb: tb0, gap: g0, cost: Infinity };
-    for (const k of [0.3, 0.35, 0.4, 0.45, 0.5, 0.55]) for (let dx = -0.33; dx <= 0.331; dx += 0.03) for (let dz = -0.33; dz <= 0.331; dz += 0.03) {
-      const F = V(F0.x + dx, BALL_R, F0.z + dz), tb = r + k * (c - r), g = gap(F, tb);
-      const cost = dx * dx + dz * dz + 0.3 * (k - 0.4) * (k - 0.4) + (g < 0.015 ? 50 + 20 * (0.015 - g) : 0);
-      if (cost < best.cost) best = { F, tb, gap: g, cost };
-    }
+    const search = (R, ks) => {
+      for (const k of ks) for (let dx = -R; dx <= R + 1e-3; dx += 0.03) for (let dz = -R; dz <= R + 1e-3; dz += 0.03) {
+        const F = V(F0.x + dx, BALL_R, F0.z + dz), tb = r + k * (c - r), g = gap(F, tb);
+        const cost = dx * dx + dz * dz + 0.3 * (k - 0.4) * (k - 0.4) + (g < 0.015 ? 50 + 20 * (0.015 - g) : 0);
+        if (cost < best.cost) best = { F, tb, gap: g, cost };
+      }
+    };
+    search(0.33, [0.3, 0.35, 0.4, 0.45, 0.5, 0.55]);
+    // (nothing clear close by - a hard drive bent over the ball: look wider, and earlier or later in the dribble)
+    if (best.gap < 0.015) search(0.48, [0.22, 0.28, 0.34, 0.4, 0.46, 0.52, 0.58, 0.64]);
     return best;
   }
   // both hands on the ball's sides at B (fingers up and forward)

@@ -3,7 +3,8 @@
 2K-style gameplay clips and breakdowns, rendered from three.js and driven by real motion capture.
 
 - **Compilation:** every basketball video below, v1 to v11, back to back in one portrait clip. [`out/compilation.mp4`](out/compilation.mp4) (6:37, 720×1280, 30 fps, H.264 + AAC; the landscape v1-v3 sit over a blurred fill)
-- **v12 (latest): "Read the Room".** Not basketball: a split screen, what he does on top and what his brain does underneath at the same moment, as one guy walks up to three people mid-conversation, checked out and then locked in, and why the locked-in one develops faster. [`out/read_the_room.mp4`](out/read_the_room.mp4) (1080×1920 portrait, 30 fps, H.264 + AAC)
+- **v13 (latest): "Game Speed".** Four new plays at full speed, each one take from the first dribble to the net, no freezes and no slow motion: a crossover drive into a layup off the glass, a spin move into a pull-up, through the legs into a step-back three, and a double crossover into a pull-up. [`out/game_speed.mp4`](out/game_speed.mp4) (1080×1920 portrait, 30 fps, H.264 + AAC)
+- v12: "Read the Room". Not basketball: a split screen, what he does on top and what his brain does underneath at the same moment, as one guy walks up to three people mid-conversation, checked out and then locked in, and why the locked-in one develops faster. [`out/read_the_room.mp4`](out/read_the_room.mp4) (1080×1920 portrait, 30 fps, H.264 + AAC)
 - v11: film room, "Behind the Curtain". A sharp player learns a new move (between the legs, cross, cross back, step-back) at rep 1, rep 3 and rep 6, then makes it his own live. Every rep plays as it looks in the gym, then the picture splits like a curtain onto what he's running behind it: his eyes, the steps fusing into chunks, his man's weight, his options. [`out/behind_the_curtain.mp4`](out/behind_the_curtain.mp4) (1080×1920 portrait, 30 fps, H.264 + AAC)
 - v10: film room, "Shoot Over Him". An iso pull-up into a good contest, in three beats: gather the ball into both hands, set your feet with a 1-2, then rise straight up and release over his hand. Then the same iso pulled up without stopping, drifting into him. [`out/shoot_over_him.mp4`](out/shoot_over_him.mp4) (1080×1920 portrait, 30 fps, H.264 + AAC)
 - v9: film room, "Lockdown". You're the defender this time: staying down on the fake, mirroring a good ball handler's cross, and helping and recovering as a team, each ending in a contested miss. [`out/lockdown.mp4`](out/lockdown.mp4) (1080×1920 portrait, 30 fps, H.264 + AAC)
@@ -30,6 +31,30 @@ It writes three files:
 - `clip_overlay.mp4`: the footage with the tracked skeleton drawn on it.
 - `clip_pose.mp4`: the skeleton alone on black, the pose-reference format that AI video tools take.
 - `clip.json`: per-frame 2D image landmarks with visibility, plus 3D world landmarks in metres around the hips.
+
+## v13: what it shows
+
+Four plays at the speed they were captured, each one take: the camera picks the ball handler up high behind his
+shoulder, stays on him through the move (tight enough to keep up with a 3.5 m/s drive), and rises and swings round
+behind him to the rim for the finish, following the ball in. No freezes, no slow motion, no captions.
+
+| Play | What happens |
+|---|---|
+| 1 · Crossover · drive · layup | He drives right at his man, crosses over four times speeding up to 3.5 m/s, and goes by him the other way. Gather, two steps, and a right-hand layup off the glass. |
+| 2 · Spin · pull-up | Coming downhill at 3 m/s, a full spin round his man, then stop and pull up. |
+| 3 · Through the legs · step-back three | Through the legs, cross, cross back, and the hop back snatched. His man slides with the cross and is late back: a three from behind the arc. |
+| 4 · Double cross · pull-up | Crossovers either way at over 2 m/s. His man goes with the first, the second leaves him, and he stops and pulls up at the elbow. |
+
+## How v13 is made
+
+- **Motion:** whole real takes (CMU mocap), played at the speed they were captured (the step-back's hop at 1.6x).
+  - Crossover drive: 78_34 (left drive, right then left: four crossovers) into 124_06's gather and layup, cut where both are going about 3.3 m/s.
+  - Spin: 78_13 (offensive move, spin left) into 124_05's stop and pull-up.
+  - Step-back three: 06_13 (low, fast dribbling: through the legs, cross, cross back, hop back) into 124_05.
+  - Double cross: 78_33 (right drive, left then right) into 124_05's pull-up.
+  - His man: 78_30's stance, a reaction time (0.25 s) after the first move he bites on it and slides that way (its slide aimed at the side the move went), so the next move goes by him; on the step-back he slides with the cross and comes back late.
+- **Engine:** the v5-v11 rep engine and the one-take camera (`take` in `src/camera5.js`), held tighter for full-speed drives (`stiff`) and weighted onto the ball handler once his man is beaten (`pairW`). The ball comes off the handler's own hands, every bounce clear of his legs and feet, and leaves the shooting hand on a real arc (off the glass on the layup).
+- **Files:** `src/play13.js`, `src/timeline13.js`, `src/hud13.js`, `src/hud13.css`, `src/main13.js`, `src/index13.html`.
 
 ## v12: what it shows
 
@@ -400,6 +425,8 @@ A right-wing isolation with the clock running out and your team down two.
 npm install
 pip install pillow numpy scipy imageio-ffmpeg trimesh networkx mediapipe nibabel scikit-image
 npm run assets      # Rocketbox models + uniforms, CMU mocap clips, the v12 brain
+npm run preview:v13 # quick 540x960 check of v13
+npm run render:v13  # final 1080x1920 v13 with audio -> out/game_speed.mp4
 npm run preview:v12 # quick 540x960 check of v12
 npm run render:v12  # final 1080x1920 v12 with audio -> out/read_the_room.mp4
 npm run preview:v11 # quick 540x960 check of v11

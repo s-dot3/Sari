@@ -35,9 +35,10 @@ export class Cam5 {
       // (off his shoulder for the move; round behind him for the shot, so he and the rim share the narrow frame)
       const away = V(S.x - RIM.x, 0, S.z - RIM.z).normalize(), a = k(C.az0 ?? 0.7, C.az1 ?? 0.3) * (C.side ?? 1);
       const dir = V(away.x * Math.cos(a) - away.z * Math.sin(a), 0, away.x * Math.sin(a) + away.z * Math.cos(a)).normalize();
-      const anchor = y.clone().lerp(d, 0.3 * (1 - u));
+      // (pairW: how much his man pulls the framing; on a blow-by it stays on the ball handler)
+      const pw = C.pairW ?? 0.42, anchor = y.clone().lerp(d, pw * 0.7 * (1 - u));
       const pos = anchor.clone().addScaledVector(dir, k(C.back0 ?? 3.1, C.back1 ?? 4.3)); pos.y = k(C.h0 ?? 2.5, C.h1 ?? 3.0);
-      const pair = y.clone().lerp(d, 0.42); pair.y = C.lookY0 ?? 0.95;
+      const pair = y.clone().lerp(d, pw); pair.y = C.lookY0 ?? 0.95;
       const shot = S.clone().lerp(V(RIM.x, 0, RIM.z), C.lookRim ?? 0.5); shot.y = C.lookY1 ?? 2.15;
       const look = pair.lerp(shot, u);
       // in the air: between the ball and the rim, so both stay in the picture
@@ -115,7 +116,9 @@ export class Cam5 {
     return { pos, look: mid.lerp(V(0.5, 2.3, 0.35), u), fov: 48 + 10 * smooth((t - 0.3) / (c.t - 0.3)) + 4 * u };
   }
   bake(rep, mode) {
-    const dt = 1 / 240, lead = mode === 'duel' || mode === 'shot' ? 0.3 : mode === 'take' ? 0.25 : 0.2, track = [], end = rep.plan.simEnd, wp = mode === 'duel' || mode === 'shot' ? 3.2 : mode === 'take' ? 3.0 : 2.2, wl = { duel: 4.2, shot: 4.2, rim: 3.4, finish: 5.5, team: 3.0, take: 4.5 }[mode];
+    // (camTake.stiff: a take on a full-speed drive follows tighter, or the driver runs out of the picture)
+    const stiff = mode === 'take' ? (rep.plan.camTake.stiff ?? 1) : 1;
+    const dt = 1 / 240, lead = mode === 'duel' || mode === 'shot' ? 0.3 : mode === 'take' ? 0.25 : 0.2, track = [], end = rep.plan.simEnd, wp = (mode === 'duel' || mode === 'shot' ? 3.2 : mode === 'take' ? 3.0 : 2.2) * stiff, wl = { duel: 4.2, shot: 4.2, rim: 3.4, finish: 5.5, team: 3.0, take: 4.5 }[mode] * stiff;
     let pos = null, look = null; const vp = V(), vl = V();
     const step = (x, v, target, om) => { const f = 1 + 2 * dt * om, oo = om * om, hoo = dt * oo, hhoo = dt * hoo, detInv = 1 / (f + hhoo); return [(f * x + dt * v + hhoo * target) * detInv, (v + hoo * (target - x)) * detInv]; };
     for (let t = 0; t <= end + 1e-6; t += dt) {
