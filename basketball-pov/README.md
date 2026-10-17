@@ -3,7 +3,8 @@
 2K-style gameplay clips and breakdowns, rendered from three.js and driven by real motion capture.
 
 - **Compilation:** every basketball video below, v1 to v11, back to back in one portrait clip. [`out/compilation.mp4`](out/compilation.mp4) (6:37, 720×1280, 30 fps, H.264 + AAC; the landscape v1-v3 sit over a blurred fill)
-- **v13 (latest): "Game Speed".** Four new plays at full speed, each one take from the first dribble to the net, no freezes and no slow motion: a crossover drive into a layup off the glass, a spin move into a pull-up, through the legs into a step-back three, and a double crossover into a pull-up. [`out/game_speed.mp4`](out/game_speed.mp4) (1080×1920 portrait, 30 fps, H.264 + AAC)
+- **v14 (latest): "Street Court".** The user's own clip of a skeleton cooking his man on an outdoor court, rebuilt for real: the same park court at the end of an autumn afternoon (blue-grey asphalt, white and light-blue lines, chain-link fence, the crowd along it, the brick building with the mural, bare trees, the skyline), the same two defenders, but every handle a real one from motion capture at the speed it was played, three possessions instead of one, filmed from behind his shoulder instead of side-on, and no talking on the soundtrack. [`out/street_court.mp4`](out/street_court.mp4) (1080×1920 portrait, 30 fps, H.264 + AAC)
+- v13: "Game Speed". Four new plays at full speed, each one take from the first dribble to the net, no freezes and no slow motion: a crossover drive into a layup off the glass, a spin move into a pull-up, through the legs into a step-back three, and a double crossover into a pull-up. [`out/game_speed.mp4`](out/game_speed.mp4) (1080×1920 portrait, 30 fps, H.264 + AAC)
 - v12: "Read the Room". Not basketball: a split screen, what he does on top and what his brain does underneath at the same moment, as one guy walks up to three people mid-conversation, checked out and then locked in, and why the locked-in one develops faster. [`out/read_the_room.mp4`](out/read_the_room.mp4) (1080×1920 portrait, 30 fps, H.264 + AAC)
 - v11: film room, "Behind the Curtain". A sharp player learns a new move (between the legs, cross, cross back, step-back) at rep 1, rep 3 and rep 6, then makes it his own live. Every rep plays as it looks in the gym, then the picture splits like a curtain onto what he's running behind it: his eyes, the steps fusing into chunks, his man's weight, his options. [`out/behind_the_curtain.mp4`](out/behind_the_curtain.mp4) (1080×1920 portrait, 30 fps, H.264 + AAC)
 - v10: film room, "Shoot Over Him". An iso pull-up into a good contest, in three beats: gather the ball into both hands, set your feet with a 1-2, then rise straight up and release over his hand. Then the same iso pulled up without stopping, drifting into him. [`out/shoot_over_him.mp4`](out/shoot_over_him.mp4) (1080×1920 portrait, 30 fps, H.264 + AAC)
@@ -31,6 +32,40 @@ It writes three files:
 - `clip_overlay.mp4`: the footage with the tracked skeleton drawn on it.
 - `clip_pose.mp4`: the skeleton alone on black, the pose-reference format that AI video tools take.
 - `clip.json`: per-frame 2D image landmarks with visibility, plus 3D world landmarks in metres around the hips.
+
+## v14: what it shows
+
+Three possessions on the street court, each one take from behind the ball handler's shoulder, like someone on the
+court filming on a phone (it follows him, shakes a little, rises to the rim for the finish). The defenders are the two
+from the original clip: white long sleeves and red shorts with the blue headband, and black tank top with grey
+shorts. The crowd stands along the fence in twos and threes and watches the ball handler, a few filming.
+
+| Possession | What happens |
+|---|---|
+| 1 · Cook | Seven crossovers attacking his man and backing out, then the crossover drive (four more at up to 3.5 m/s): his man bites on the first and the skeleton goes by him for a layup off the glass. |
+| 2 · Pull-up | He walks it up behind three crossovers with his man giving ground, and rises straight up into a pull-up over him. |
+| 3 · Step-back | Backing out, through the legs twice, cross and cross back: his man goes with the cross, and the hop back leaves him late for a three. |
+
+## How v14 is made
+
+- **Motion:** the ball handler's handles are all one real freestyle take (CMU 06_13), played at the speed it was
+  captured and cut where the poses match (`tools/transit.py`) into a real finish: 78_34's crossover drive into 124_06's
+  layup, or 124_05's pull-up.
+- **His man plays defence:** nothing is keyframed. He sits in his stance between the ball and the basket, and a
+  reaction time (0.25 s) after the ball handler gets out of line he moves to get back in front with real footwork: a
+  slide either way (78_30), giving ground over a shoulder (78_28) or chopping up (78_25, 78_27). The move is chosen for
+  where the ball handler will be when it ends, measured from each take, and cut short into his stance. On the final
+  move he bites the wrong way and is beaten.
+- **Scene:** `src/street.js` paints the asphalt (cracks, patches, worn paint, blown leaves, a close-up stone grain),
+  builds the fence, the outdoor hoop (painted steel board, double rim, gooseneck pole), the brick building and its
+  mural, bare trees grown branch by branch, and the skyline. Everything past the fence has the low sun baked into its
+  colours; the court is in the buildings' shade and lit by the sky. `src/crowd14.js` poses the crowd (Rocketbox bodies in
+  everyday clothes from `tools/prep_street.py`) with the rig's IK, heads following the play.
+- **Sound:** `tools/audio_street.py`: the city (traffic rumble, cars on the far street, wind, the odd sparrow), every
+  dribble on asphalt with its slap-back off the brick building, the sneakers on every step and cut, the steel board,
+  the net. No voices.
+- **Files:** `src/play14.js`, `src/timeline14.js`, `src/street.js`, `src/crowd14.js`, `src/main14.js`,
+  `src/index14.html`, `tools/prep_street.py`, `tools/audio_street.py`.
 
 ## v13: what it shows
 
@@ -425,6 +460,8 @@ A right-wing isolation with the clock running out and your team down two.
 npm install
 pip install pillow numpy scipy imageio-ffmpeg trimesh networkx mediapipe nibabel scikit-image
 npm run assets      # Rocketbox models + uniforms, CMU mocap clips, the v12 brain
+npm run preview:v14 # quick 540x960 check of v14
+npm run render:v14  # final 1080x1920 v14 with audio -> out/street_court.mp4
 npm run preview:v13 # quick 540x960 check of v13
 npm run render:v13  # final 1080x1920 v13 with audio -> out/game_speed.mp4
 npm run preview:v12 # quick 540x960 check of v12

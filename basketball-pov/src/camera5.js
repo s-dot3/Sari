@@ -32,8 +32,10 @@ export class Cam5 {
       const C = rep.plan.camTake, P = rep.plan, S = rep.frame('you', P.release).p;
       const u = smooth((t - (P.gatherAt - 0.3)) / (P.release + 0.15 - (P.gatherAt - 0.3)));
       const k = (a, b) => a + (b - a) * u;
-      // (off his shoulder for the move; round behind him for the shot, so he and the rim share the narrow frame)
+      // (off his shoulder for the move; round behind him for the shot, so he and the rim share the narrow frame;
+      // C.track: a long possession that moves round the floor is followed from where he is, not from the shot spot)
       const away = V(S.x - RIM.x, 0, S.z - RIM.z).normalize(), a = k(C.az0 ?? 0.7, C.az1 ?? 0.3) * (C.side ?? 1);
+      if (C.track) away.lerp(V(y.x - RIM.x, 0, y.z - RIM.z).normalize(), 1 - u).normalize();
       const dir = V(away.x * Math.cos(a) - away.z * Math.sin(a), 0, away.x * Math.sin(a) + away.z * Math.cos(a)).normalize();
       // (pairW: how much his man pulls the framing; on a blow-by it stays on the ball handler)
       const pw = C.pairW ?? 0.42, anchor = y.clone().lerp(d, pw * 0.7 * (1 - u));

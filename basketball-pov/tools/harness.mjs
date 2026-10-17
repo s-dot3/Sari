@@ -41,7 +41,8 @@ export async function openPage(server, page = 'src/index.html', query = '', { wi
   p.on('console', m => { if (process.env.QUIET !== '1') console.log('[page]', m.text()); });
   p.on('pageerror', e => console.log('[pageerror]', e.message));
   const port = server.address().port;
-  await p.goto(`http://127.0.0.1:${port}/${page}${query ? '?' + query : ''}`);
+  // (a heavy page can still be loading textures when its frames are ready: don't wait for the load event)
+  await p.goto(`http://127.0.0.1:${port}/${page}${query ? '?' + query : ''}`, { waitUntil: 'domcontentloaded', timeout: 300000 });
   await p.waitForFunction(() => window.__ready === true || window.__error, null, { timeout: 600000 });
   const err = await p.evaluate(() => window.__error);
   if (err) throw new Error('page error: ' + err);
