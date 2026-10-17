@@ -114,7 +114,7 @@ export const REPS = {
   cook: {
     simEnd: 10.2, d: 'street1',
     plan: { gatherDur: 0.2, layup: { releaseClip: 3.36, side: 'R', oneHand: 0 },
-      camTake: { track: true, stiff: 1.6, pairW: 0.3, side: -1, az0: 0.38, az1: 0.42, back0: 3.6, back1: 4.2, h0: 1.85, h1: 2.3, fov0: 56, fov1: 62, lookY0: 1.0, lookRim: 0.55, lookY1: 1.9 } },
+      camTake: { track: true, stiff: 1.6, pairW: 0.3, side: -1, az0: 0.58, az1: 0.42, back0: 3.6, back1: 4.2, h0: 1.85, h1: 2.3, fov0: 56, fov1: 62, lookY0: 1.0, lookRim: 0.55, lookY1: 1.9 } },
     build(clips, legs) {
       const P = this.plan;
       // you: 06_13 from 32.9 - at him behind crossovers at 33.0, 33.7 and 34.4, backing out behind three more (35.9,
@@ -163,7 +163,7 @@ export const REPS = {
   stepback: {
     simEnd: 6.8, d: 'street1',
     plan: { gatherDur: 0.2, shotClip: 3.38, flight: 1.25,
-      camTake: { track: true, stiff: 1.6, pairW: 0.3, side: -1, az0: 0.3, az1: 0.28, back0: 3.6, back1: 4.6, h0: 1.85, h1: 2.4, fov0: 56, fov1: 62, lookY0: 1.0, follow: 0.3, lookRim: 0.36 } },
+      camTake: { track: true, stiff: 1.6, pairW: 0.3, side: -1, az0: 0.58, az1: 0.28, back0: 3.6, back1: 4.6, h0: 1.85, h1: 2.4, fov0: 56, fov1: 62, lookY0: 1.0, follow: 0.3, lookRim: 0.36 } },
     build(clips, legs) {
       const P = this.plan;
       // you: 06_13 from 25.8 - at him, through the legs at 28.0 and 28.8, crossover at 29.2 and back at 29.5 - the

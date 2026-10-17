@@ -236,5 +236,5 @@ window.events = () => {
   });
   return ev;
 };
-window.reps = reps; window.players = players; window.crowd = crowd; window.scene = scene; window.renderer = renderer;
+window.reps = reps; window.players = players; window.crowd = crowd; window.scene = scene; window.renderer = renderer; window.cam = cam;
 window.__ready = true;
