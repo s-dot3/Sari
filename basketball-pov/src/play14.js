@@ -1,8 +1,8 @@
-// v14 street court: three possessions, each one take, the ball handler's handles all from one real freestyle take
+// v14 "Under the El": three possessions, each one take, the ball handler's handles all from one real freestyle take
 // (CMU 06_13: crossovers, through the legs, attack and retreat dribbles - in front of a man, at the speed it was
 // played), cut where the poses match (tools/transit.py) into a real finish:
 //  cook     - seven crossovers attacking and backing out, then 78_34's drive (four more, up to 3.5 m/s) and
-//             124_06's layup off the glass
+//             124_06's layup off the glass; a train goes by on the el
 //  pullup   - walking it up behind three crossovers and straight up into 124_05's pull-up
 //  stepback - backing out, through the legs twice, cross and cross back, the hop back (1.6x) and 124_05's three
 // His man is not keyframed: he plays defence. He sits in his stance between the ball and the basket and, a reaction
@@ -112,9 +112,9 @@ const place = (clips, segs, leg, t, at, face, turn = 0) => anchoredTrack(clips, 
 export const REPS = {
   // 1 - seven crossovers attacking and backing out, then the crossover drive to the glass
   cook: {
-    simEnd: 10.2, d: 'street1',
+    simEnd: 10.2, d: 'd_blue', train: { x0: -120, v: 18 },
     plan: { gatherDur: 0.2, layup: { releaseClip: 3.36, side: 'R', oneHand: 0 },
-      camTake: { track: true, stiff: 1.6, pairW: 0.3, side: -1, az0: 0.58, az1: 0.42, back0: 3.6, back1: 4.2, h0: 1.85, h1: 2.3, fov0: 56, fov1: 62, lookY0: 1.0, lookRim: 0.55, lookY1: 1.9 } },
+      camTake: { track: true, stiff: 1.6, pairW: 0.3, side: -1, az0: 0.58, az1: 0.42, back0: 3.6, back1: 4.2, h0: 1.85, h1: 2.3, fov0: 56, fov1: 62, lookY0: 1.35, lookRim: 0.55, lookY1: 1.9 } },
     build(clips, legs) {
       const P = this.plan;
       // you: 06_13 from 32.9 - at him behind crossovers at 33.0, 33.7 and 34.4, backing out behind three more (35.9,
@@ -137,9 +137,9 @@ export const REPS = {
   },
   // 2 - walk it up behind three crossovers and straight up from the top
   pullup: {
-    simEnd: 6.0, d: 'street2',
+    simEnd: 6.0, d: 'd_gold',
     plan: { gatherDur: 0.2, shotClip: 3.38, flight: 1.15,
-      camTake: { stiff: 1.4, pairW: 0.4, side: 1, az0: 0.62, az1: 0.32, back0: 3.6, back1: 4.5, h0: 1.85, h1: 2.4, fov0: 56, fov1: 62, lookY0: 1.0, follow: 0.35, lookRim: 0.38 } },
+      camTake: { stiff: 1.4, pairW: 0.4, side: 1, az0: 0.62, az1: 0.32, back0: 3.6, back1: 4.5, h0: 1.85, h1: 2.4, fov0: 56, fov1: 62, lookY0: 1.35, follow: 0.35, lookRim: 0.38 } },
     build(clips, legs) {
       const P = this.plan;
       // you: 06_13 from 0.35 - the first dribble, up the floor behind crossovers at 0.8, 1.6 and 3.5 - and on the way
@@ -161,9 +161,9 @@ export const REPS = {
   },
   // 3 - backing out, through the legs twice, cross and cross back, step back: a three
   stepback: {
-    simEnd: 6.8, d: 'street1',
+    simEnd: 6.8, d: 'd_blue',
     plan: { gatherDur: 0.2, shotClip: 3.38, flight: 1.25,
-      camTake: { track: true, stiff: 1.6, pairW: 0.3, side: -1, az0: 0.58, az1: 0.28, back0: 3.6, back1: 4.6, h0: 1.85, h1: 2.4, fov0: 56, fov1: 62, lookY0: 1.0, follow: 0.3, lookRim: 0.36 } },
+      camTake: { track: true, stiff: 1.6, pairW: 0.3, side: -1, az0: 0.58, az1: 0.28, back0: 3.6, back1: 4.6, h0: 1.85, h1: 2.4, fov0: 56, fov1: 62, lookY0: 1.35, follow: 0.3, lookRim: 0.36 } },
     build(clips, legs) {
       const P = this.plan;
       // you: 06_13 from 25.8 - at him, through the legs at 28.0 and 28.8, crossover at 29.2 and back at 29.5 - the

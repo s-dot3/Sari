@@ -1,9 +1,8 @@
-"""v14 street court: texture sets for the defenders and the crowd, from the Rocketbox athletes.
+"""v14 court under the el: texture sets for the two defenders and the crowd, from the Rocketbox athletes.
 
-The two defenders from the user's clip: a white long-sleeve top over red shorts (model 03; his blue headband is a
-mesh), and a black tank top over light-grey shorts (model 04). The crowd: everyday clothes - tops and hoodies with
-long sleeves, jeans and dark trousers, varied skin and hair - recoloured over the same bodies, at half resolution
-(they are 6 m and more from the camera).
+The defenders: a royal-blue tank top over black shorts (model 04) and a gold tee over charcoal shorts (model 02). The
+crowd: a summer afternoon's clothes - tees and tanks, shorts, some jeans and joggers, varied skin and hair -
+recoloured over the same bodies, at half resolution (they are 6 m and more from the camera).
 
 usage: python3 tools/prep_street.py [name ...]
 Output: assets/players/<name>/{body_color.jpg, body_rough.jpg, head_color.jpg, head_rough.jpg[, opacity_color.png]}
@@ -45,6 +44,9 @@ def build(name, model, cfg, size=2048):
     hand = (G == 'hand')
     # top: the shirt as modelled, plus the arms down to the wrists for long sleeves (not the neck above the collar)
     top = ((cls == 'shirt') | (cls == 'sleeve')) & M
+    if cfg.get('sleeves') == 'short':
+        # (a tank top's bare shoulders covered down to mid upper arm: a tee)
+        top |= (G == 'upper') & M & (np.abs(P[..., 0]) < 0.34)
     if cfg.get('sleeves') == 'long':
         top |= ((G == 'upper') | (G == 'fore')) & M & ~hand
         top |= (G == 'torso') & M & ~(skin & (y > 1.43))
@@ -112,25 +114,25 @@ def build(name, model, cfg, size=2048):
 
 
 SETS = {
-    # the defenders from the clip
-    'street1': ('03', dict(top='#f1f0ec', sleeves='long', bottom='#c8232c', socks='#f2f2f0', shoes='#d9d6d0', skin='#b98463', hair='#16110e')),
-    'street2': ('04', dict(top='#151618', bottom='#b9bbbd', socks='#efefed', shoes='#1b1b1d', skin='#6b4430', hair='#0f0d0c')),
-    # the crowd: long sleeves (it's autumn), jeans and trousers, a few in shorts like the players waiting to run next
-    'c01': ('03', dict(top='#1c1d21', sleeves='long', bottom='#3b4f6e', pants=True, denim=True, shoes='#e8e6e0', skin='#8a5a3c', hair='#141010')),
-    'c02': ('04', dict(top='#8d9196', sleeves='long', bottom='#232428', pants=True, shoes='#f0eeea', skin='#e0b391', hair='#3b2a1c')),
-    'c03': ('02', dict(top='#f2f1ee', sleeves='long', bottom='#2f3c55', pants=True, denim=True, shoes='#1d1d1f', skin='#5a3726', hair='#121010')),
-    'c04': ('03', dict(top='#24304a', sleeves='long', bottom='#b5a68a', pants=True, shoes='#7c6a55', skin='#c68e6a', hair='#22180f')),
-    'c05': ('04', dict(top='#5c1f26', sleeves='long', bottom='#1b1c1f', pants=True, shoes='#e9e7e2', skin='#9c6646', hair='#0e0c0b')),
-    'c06': ('02', dict(top='#3e4a35', sleeves='long', bottom='#4c5a72', pants=True, denim=True, shoes='#d8d4cc', skin='#e8bf9e', hair='#6b4f33')),
-    'c07': ('04', dict(top='#e7e5e0', bottom='#202124', socks='#f2f2f0', shoes='#1a1a1c', skin='#4d2f22', hair='#0f0d0c')),
-    'c08': ('03', dict(top='#c9c3b6', sleeves='long', bottom='#2a2b2f', pants=True, shoes='#2a2a2c', skin='#a8714e', hair='#1a1410')),
-    'c09': ('02', dict(top='#2b5fa8', sleeves='long', bottom='#2c3448', pants=True, denim=True, shoes='#f0efea', skin='#7a4e34', hair='#100e0d')),
-    'c10': ('04', dict(top='#26272b', bottom='#6f7276', socks='#1c1c1e', shoes='#e6e3dc', skin='#c99a74', hair='#2a1d14')),
-    'c11': ('03', dict(top='#a33a2a', sleeves='long', bottom='#3a4762', pants=True, denim=True, shoes='#1e1e20', skin='#d9a882', hair='#3a2618')),
-    'c12': ('02', dict(top='#121315', sleeves='long', bottom='#121315', pants=True, shoes='#ecebe7', skin='#3f2618', hair='#0c0b0a')),
+    # the two defenders
+    'd_blue': ('04', dict(top='#2152c4', bottom='#151517', socks='#f2f2f0', shoes='#e9e7e2', skin='#5a3726', hair='#0f0d0c')),
+    'd_gold': ('02', dict(top='#d6a531', bottom='#3a3d42', socks='#f2f2f0', shoes='#202124', skin='#c99a74', hair='#2a1d14')),
+    # the crowd: tees and tanks, shorts, a few in jeans or joggers
+    'c01': ('03', dict(top='#f1f0ec', bottom='#4a5f86', shoes='#e8e6e0', skin='#8a5a3c', hair='#141010')),
+    'c02': ('04', dict(top='#18191b', bottom='#8e9196', socks='#efefed', shoes='#e9e7e2', skin='#e0b391', hair='#3b2a1c')),
+    'c03': ('02', dict(top='#e46f5c', bottom='#b5a68a', pants=True, shoes='#f0eeea', skin='#5a3726', hair='#121010')),
+    'c04': ('03', dict(top='#24304a', bottom='#3b4f6e', pants=True, denim=True, shoes='#1d1d1f', skin='#c68e6a', hair='#22180f')),
+    'c05': ('04', dict(top='#2a8c8c', sleeves='short', bottom='#1b1c1f', socks='#f2f2f0', shoes='#1d1d1f', skin='#9c6646', hair='#0e0c0b')),
+    'c06': ('02', dict(top='#9a9ea3', bottom='#1b1c1f', shoes='#d8d4cc', skin='#e8bf9e', hair='#6b4f33')),
+    'c07': ('04', dict(top='#ecebe7', bottom='#2c3448', socks='#f2f2f0', shoes='#1a1a1c', skin='#4d2f22', hair='#0f0d0c')),
+    'c08': ('03', dict(top='#5d6b3e', bottom='#c9b99a', shoes='#7c6a55', skin='#a8714e', hair='#1a1410')),
+    'c09': ('02', dict(top='#7fb2e0', bottom='#2c3448', pants=True, denim=True, shoes='#f0efea', skin='#7a4e34', hair='#100e0d')),
+    'c10': ('04', dict(top='#e8c547', sleeves='short', bottom='#1b1c1f', socks='#efefed', shoes='#e6e3dc', skin='#c99a74', hair='#2a1d14')),
+    'c11': ('03', dict(top='#141517', bottom='#1d1e21', pants=True, shoes='#ecebe7', skin='#d9a882', hair='#3a2618')),
+    'c12': ('02', dict(top='#6b4c9a', bottom='#7d8085', pants=True, shoes='#ecebe7', skin='#3f2618', hair='#0c0b0a')),
 }
 
 if __name__ == '__main__':
     for n in sys.argv[1:] or list(SETS):
         m, cfg = SETS[n]
-        build(n, m, cfg, 2048 if n.startswith('street') else 1024)
+        build(n, m, cfg, 2048 if n.startswith('d_') else 1024)

@@ -1,11 +1,10 @@
-// v14 "street court": the user's own clip - a skeleton cooking his man on an outdoor court in front of a crowd at
-// the end of an autumn afternoon - rebuilt for real: the same court, fence, crowd, brick building, trees and skyline,
-// the skeleton against the same two defenders (white long sleeves and red shorts with the blue headband; black tank
-// top and grey shorts), but every move a real one from motion capture, at the speed it was played, from behind the
-// ball handler's shoulder (a phone held by someone on the court, not the side-on angle of the original), with no
-// talking on the soundtrack. 1080x1920 at 30 fps with motion blur.
+// v14 "Under the El": a brand-new street-ball clip in the style of the user's own (a skeleton cooking people at a
+// park court, a crowd round it, shot on a phone) - a different court, different people, different plays: a city
+// court on a sunny afternoon beside an elevated subway line, the skeleton against a man in a royal-blue tank and a
+// man in a gold tee, every handle a real one from motion capture at the speed it was played, filmed from behind his
+// shoulder, and no talking on the soundtrack. 1080x1920 at 30 fps with motion blur.
 import * as THREE from 'three';
-import { buildStreet, streetEnvironment } from './street.js';
+import { buildElCourt, elEnvironment, SUN } from './elcourt.js';
 import { loadTemplates, makePlayerMesh, Rig } from './player.js';
 import { loadClip } from './mocap.js';
 import { CLIPS14, REPS, buildRep } from './play14.js';
@@ -20,37 +19,9 @@ const W = 1080, H = 1920;
 const q = new URLSearchParams(location.search);
 const SUB = q.has('sub') ? +q.get('sub') : 2;
 // the skeleton built taller than he reads (about 6'5" to the top of the skull in his stance); the two defenders
-// are people, about 6'2"
-const SPECS = { you: { model: '04', tex: 'you', height: 2.125 }, street1: { model: '03', tex: 'street1', height: 1.9 }, street2: { model: '04', tex: 'street2', height: 1.88 } };
-
-// A sweatband fitted to the head: the head's vertices in the head bone's frame, sliced at the forehead, give the
-// outline it sits on; the band is that outline a few millimetres out, 4 cm tall, with a rounded edge.
-function headband(mesh, color) {
-  const sk = mesh.skeleton, hi = sk.bones.findIndex(b => /Head$/.test(b.name)), inv = sk.boneInverses[hi];
-  const g = mesh.geometry, pos = g.attributes.position, si = g.attributes.skinIndex, sw = g.attributes.skinWeight, pts = [];
-  for (let i = 0; i < pos.count; i++) {
-    let w = 0; for (let k = 0; k < 4; k++) if (si.getComponent(i, k) === hi) w += sw.getComponent(i, k);
-    if (w > 0.95) pts.push(new THREE.Vector3().fromBufferAttribute(pos, i).applyMatrix4(mesh.bindMatrix).applyMatrix4(inv));
-  }
-  // the bone's long axis is x (up the head); the forehead band sits at 62% of the way to the crown
-  let x0 = Infinity, x1 = -Infinity; for (const p of pts) { x0 = Math.min(x0, p.x); x1 = Math.max(x1, p.x); }
-  const xb = x0 + (x1 - x0) * 0.62, band = 4.2, N = 64, ring = [];
-  for (let k = 0; k < N; k++) {
-    const a = k / N * Math.PI * 2, dir = [Math.cos(a), Math.sin(a)];
-    let r = 0; for (const p of pts) if (Math.abs(p.x - xb) < band / 2) { const c = p.y * dir[0] + p.z * dir[1]; const s = Math.abs(-p.y * dir[1] + p.z * dir[0]); if (s < 0.9) r = Math.max(r, c); }
-    ring.push(r);
-  }
-  // (smooth the outline so ears and hair cards don't dent it)
-  const rr = ring.map((_, k) => { let s = 0; for (let j = -3; j <= 3; j++) s += ring[(k + j + N) % N]; return s / 7 + 0.35; });
-  const prof = [[-band / 2, 0], [-band / 2 + 0.5, 0.45], [0, 0.6], [band / 2 - 0.5, 0.45], [band / 2, 0]], P = [], idx = [];
-  for (let k = 0; k <= N; k++) for (const [dx, out] of prof) { const a = k / N * Math.PI * 2, r = rr[k % N] + out; P.push(xb + dx, Math.cos(a) * r, Math.sin(a) * r); }
-  const M = prof.length;
-  for (let k = 0; k < N; k++) for (let j = 0; j < M - 1; j++) { const a = k * M + j, b = a + M; idx.push(a, b, a + 1, a + 1, b, b + 1); }
-  const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(P, 3)); geo.setIndex(idx); geo.computeVertexNormals();
-  const m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color, roughness: 0.85, side: THREE.DoubleSide }));
-  m.castShadow = true; sk.bones[hi].add(m);
-  return m;
-}
+// are people, about 6'3" and 6'1"
+const SPECS = { you: { model: '04', tex: 'you', height: 2.125 }, d_blue: { model: '04', tex: 'd_blue', height: 1.92 }, d_gold: { model: '02', tex: 'd_gold', height: 1.86 } };
+const DEFS = ['d_blue', 'd_gold'];
 
 // every texture the players and the crowd load, counted, so no frame is drawn before they're in
 const texLoads = { done: 0, total: 0 };
@@ -65,17 +36,16 @@ async function init() {
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFShadowMap;
   const scene = new THREE.Scene();
-  // light: the open sky (the court is in the buildings' shade) - an environment of the sky itself, and the sky's
-  // brightest part overhead as a soft key that grounds everyone with a soft shadow
-  scene.environment = new THREE.PMREMGenerator(renderer).fromScene(streetEnvironment(), 0.04, 0.1, 1000).texture;
-  scene.environmentIntensity = 0.85;
-  scene.add(new THREE.HemisphereLight(0xd6dcea, 0x5e5850, 0.35));
-  const key = new THREE.DirectionalLight(0xf0f1f6, 1.15);
-  key.position.set(4, 16, 10); key.target.position.set(0, 0, 4); key.castShadow = true; key.shadow.mapSize.set(2048, 2048);
-  const sc = key.shadow.camera; sc.left = -13; sc.right = 13; sc.top = 13; sc.bottom = -13; sc.near = 2; sc.far = 40;
-  key.shadow.bias = -0.0004; key.shadow.normalBias = 0.02; key.shadow.radius = 7;
-  scene.add(key, key.target);
-  const street = buildStreet(renderer, scene);
+  // light: the afternoon sun (hard shadows on the court), the sky as an environment and a little bounce from the ground
+  scene.environment = new THREE.PMREMGenerator(renderer).fromScene(elEnvironment(), 0.04, 0.1, 1000).texture;
+  scene.environmentIntensity = 0.55;
+  scene.add(new THREE.HemisphereLight(0xc2d6f2, 0x6b6052, 0.35));
+  const sun = new THREE.DirectionalLight(0xfff0dc, 3.1);
+  sun.target.position.set(0, 0, 4.5); sun.position.copy(sun.target.position).addScaledVector(SUN, 45); sun.castShadow = true; sun.shadow.mapSize.set(4096, 4096);
+  const sc = sun.shadow.camera; sc.left = -17; sc.right = 17; sc.top = 17; sc.bottom = -17; sc.near = 5; sc.far = 95;
+  sun.shadow.bias = -0.00025; sun.shadow.normalBias = 0.025; sun.shadow.radius = 2.5;
+  scene.add(sun, sun.target);
+  const street = buildElCourt(renderer, scene);
   const T = await loadTemplates(['04', '03', '02']);
   const players = {};
   for (const [name, s] of Object.entries(SPECS)) { const { root, k } = makePlayerMesh(T, s); scene.add(root); players[name] = { root, rig: new Rig(root, k), spec: s }; }
@@ -85,7 +55,6 @@ async function init() {
   { const p = players.you; let m = null; p.root.traverse(o => { if (o.isSkinnedMesh && !m) m = o; });
     p.bones = makeBoneSkeleton(bones, m, { feet: false, material: boneMat }); p.shoes = makeShoes(m); m.visible = false;
     for (const mt of p.shoes.material) { mt.color.setRGB(0.07, 0.07, 0.075); mt.roughness = 0.75; } }
-  { let m = null; players.street1.root.traverse(o => { if (o.isSkinnedMesh && !m) m = o; }); players.street1.band = headband(m, 0x2f8fe0); }
   const clips = {}; for (const c of CLIPS14) clips[c] = await loadClip(c);
   const legOf = (r) => r.len.thigh + r.len.calf;
   const reps = {};
@@ -98,7 +67,7 @@ async function init() {
   const cam = new Cam5(reps);
   // the crowd, leaving room round wherever the camera goes (it is somebody on the court filming, not behind a head)
   const camAt = []; for (const name of Object.keys(reps)) for (let t = 0; t <= reps[name].plan.simEnd; t += 0.2) camAt.push(cam.at(name, 'take', t).pos);
-  const crowd = q.has('nocrowd') ? null : new Crowd(T, scene, { skip: (x, z) => camAt.some(p => Math.hypot(p.x - x, p.z - z) < 1.6) });
+  const crowd = q.has('nocrowd') ? null : new Crowd(T, scene, { benches: street.benches, skip: (x, z) => camAt.some(p => Math.hypot(p.x - x, p.z - z) < 1.6) });
   const ball = makeBall(scene);
   const camera = new THREE.PerspectiveCamera(54, W / H, 0.1, 2600);
   const frames = buildTimeMap(reps, FPS);
@@ -147,7 +116,10 @@ function watcher(rep) {
 function poseAll(rep, st) {
   const Y = rep.youPose(st); players.you.rig.applyMocap(Y.T, Y.T.src, Y.opt);
   // the man guarding him this possession; the other one is off the floor
-  for (const n of ['street1', 'street2']) players[n].root.visible = n === rep.d;
+  for (const n of DEFS) players[n].root.visible = n === rep.d;
+  // the train goes by up on the el during the first possession
+  const tr = REPS[rep.name].train;
+  street.train.visible = !!tr; if (tr) street.train.position.x = tr.x0 + tr.v * st;
   const D = rep.d1Pose(st); players[rep.d].rig.applyMocap(D.T, D.T.src, D.opt);
   const b = rep.ball(st);
   ball.position.copy(b.pos); ball.quaternion.copy(b.q);
@@ -205,7 +177,7 @@ window.renderSim = (name, st, mode = 'take') => {
   present(1.0, 1);
 };
 window.events = () => {
-  const ev = { duration: frames.length / FPS, bounces: [], catches: [], swish: [], releases: [], squeaks: [], steps: [], cuts: [], board: [], thuds: [], whistles: [], freezes: [], rims: [] };
+  const ev = { duration: frames.length / FPS, bounces: [], catches: [], swish: [], releases: [], squeaks: [], steps: [], trains: [], cuts: [], board: [], thuds: [], whistles: [], freezes: [], rims: [] };
   let vt = 0, prev = null;
   SEQ.forEach((s) => {
     const n = Math.round((s.to - s.from) / s.rate * FPS), v0 = vt;
@@ -222,6 +194,9 @@ window.events = () => {
     // sneakers: every change of move on either side
     for (const tr of [rep.tracks.you, rep.tracks.d1]) for (const sg of tr.segs.slice(1)) push(ev.squeaks, sg.at + 0.05, { gain: 0.8 });
     if (P.takeoff) push(ev.squeaks, P.takeoff - 0.04, { gain: 0.7 });
+    // the train on the el: when its middle is over the court (its sound is cut with the picture at the edit)
+    const tr = REPS[s.rep].train;
+    if (tr) { const mid = (-tr.x0 - 2 * 15.6) / tr.v; ev.trains.push({ t: v0 + (mid - s.from) / s.rate, t0: v0, t1: v0 + n / FPS, speed: tr.v }); }
     // every foot coming down on the asphalt, his and his man's (the ankle dropping back to the floor)
     const HZ = (rep.T.n - 1) / P.simEnd;
     for (const [arr, g] of [[rep.T.ankL, 1], [rep.T.ankR, 1], [rep.T.d1feet.map(f => f[0]), 0.8], [rep.T.d1feet.map(f => f[1]), 0.8]]) {

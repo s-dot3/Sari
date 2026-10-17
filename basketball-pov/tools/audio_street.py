@@ -1,10 +1,12 @@
-"""Sound for the v14 street-court clip (48 kHz stereo WAV): an outdoor court in a city park, and nobody talking.
+"""Sound for the v14 clip "Under the El" (48 kHz stereo WAV): a city park court beside an elevated subway line, and
+nobody talking.
 
-The bed is the city - a low traffic rumble, cars going by on the far street, a little wind in the bare trees, the odd
-sparrow. On top: every dribble on asphalt (a hard, dry smack with the ball's ring and a slap-back off the brick
-building across the park), the sneakers (soft scuffs on every step, harder ones on every cut), the catch, the
-release, the steel backboard on the layup, the nylon net, and the ball bouncing away after it. No crowd voices, no
-music, no edit swooshes: three phone takes cut together.
+The bed is the street - traffic under the el, a car going by now and then, wind in the plane trees, the odd sparrow;
+during the first possession a train comes over on the el (a low rumble building, the wheels clacking over the rail
+joints, the steel structure ringing, then away). On top: every dribble on the court (a hard, dry smack with the ball's
+ring and a slap-back off the walk-ups across the street), the sneakers (soft scuffs on every step, harder ones on every
+cut), the catch, the release, the steel backboard on the layup, the chain net's jingle, and the ball bouncing away
+after it. No crowd voices, no music, no edit swooshes: three phone takes cut together.
 usage: python3 tools/audio_street.py out/events14.json out/audio14.wav
 """
 import json, sys, wave
@@ -26,13 +28,12 @@ def hp(x, f, order=2): return signal.sosfilt(signal.butter(order, f, btype='high
 
 
 def outdoor_ir(length=1.4):
-    """Open air between buildings: nothing at first, a slap-back off the brick block ~30 m off (175 ms), a weaker one
-    off the far side (260 ms), and a thin, dark diffuse tail - no room."""
+    """Open air in a street canyon: nothing at first, a short metallic flutter off the el's steel (60-90 ms), a
+    slap-back off the walk-ups across the street (~150 ms), a weaker one off the far side, and a thin, dark tail."""
     n = int(length * SR); t = np.arange(n) / SR
     ir = np.zeros(n); ir[0] = 1.0
-    tail = lp(rng.standard_normal(n), 3000) * np.exp(-t / 0.22) * 0.05 * np.clip((t - 0.03) / 0.05, 0, 1)
-    ir += tail
-    for d, g, f in [(0.175, 0.2, 2600), (0.262, 0.1, 1800), (0.41, 0.045, 1400)]:
+    ir += lp(rng.standard_normal(n), 3200) * np.exp(-t / 0.2) * 0.05 * np.clip((t - 0.03) / 0.05, 0, 1)
+    for d, g, f in [(0.062, 0.08, 5000), (0.088, 0.06, 4500), (0.15, 0.2, 2800), (0.235, 0.09, 1900), (0.37, 0.04, 1400)]:
         k = int(d * SR); e = lp(np.r_[np.zeros(40), 1.0, np.zeros(400)], f); ir[k:k + len(e)] += e * g * 3
     return ir
 
@@ -86,11 +87,37 @@ def whff():
 
 
 def swish():
-    """A nylon net: the ball zipping through, a soft snap of the cords."""
-    n = int(0.6 * SR); t = np.arange(n) / SR
-    fl = np.clip(0.7 + 0.3 * np.abs(lp(rng.standard_normal(n), 40, 1)) * 4, 0, 1.4)
-    x = bp(rng.standard_normal(n), 1800, 9000) * (1 - np.exp(-t / 0.012)) * np.exp(-t / 0.11) * fl
-    x += bp(rng.standard_normal(n), 400, 1200) * np.exp(-t / 0.04) * 0.25
+    """Through a chain net: the links jingling - a shower of small bright metal clinks dying away over half a second."""
+    n = int(0.7 * SR); t = np.arange(n) / SR
+    x = np.zeros(n)
+    for _ in range(70):
+        t0 = rng.uniform(0, 0.25) ** 1.3; k = int(t0 * SR); m = int(0.06 * SR); tt = np.arange(m) / SR
+        f = rng.uniform(2600, 7800); a = np.exp(-t0 / 0.18) * rng.uniform(0.3, 1.0)
+        c = np.sin(2 * np.pi * f * tt + rng.uniform(0, 6.3)) * np.exp(-tt / rng.uniform(0.006, 0.02))
+        x[k:k + m] += c[: max(0, min(m, n - k))] * a
+    x += bp(rng.standard_normal(n), 3000, 10000) * np.exp(-t / 0.08) * 0.15
+    return x / np.max(np.abs(x))
+
+
+def train(dur, speed):
+    """An el train going by overhead: a deep rumble and the structure's resonance building as it comes, the wheels
+    clacking over the rail joints (two axles per truck, two trucks per car), a steel ring, then going away."""
+    n = int(dur * SR); t = np.arange(n) / SR
+    rum = lp(np.cumsum(rng.standard_normal(n)) * 0.02, 140, 2); rum /= np.sqrt(np.mean(rum ** 2)) + 1e-9
+    body = bp(rng.standard_normal(n), 120, 900); body /= np.sqrt(np.mean(body ** 2)) + 1e-9
+    ring = sum(a * np.sin(2 * np.pi * f * t + p) for f, a, p in [(212, 0.5, 0.3), (437, 0.35, 1.2), (911, 0.2, 2.0), (1530, 0.12, 0.7)]) * (0.7 + 0.3 * np.sin(2 * np.pi * 0.7 * t))
+    clack = np.zeros(n); joint = 13.0  # a rail joint every 13 m: clacks as each axle crosses it
+    for car in range(5):
+        for off in [1.6, 3.6, 11.6, 13.6]:
+            x0 = car * 15.6 + off
+            for j in range(-8, 30):
+                tc = (j * joint + x0) / speed
+                k = int((tc + dur * 0.15) * SR)
+                if 0 <= k < n - 2400:
+                    m = 2400; tt = np.arange(m) / SR
+                    clack[k:k + m] += (np.sin(2 * np.pi * 180 * tt) * np.exp(-tt / 0.012) + bp(rng.standard_normal(m), 600, 3000) * np.exp(-tt / 0.004) * 0.6)
+    clack /= np.max(np.abs(clack)) + 1e-9
+    x = rum * 0.9 + body * 0.35 + ring * 0.12 + clack * 0.55
     return x / np.max(np.abs(x))
 
 
@@ -132,13 +159,22 @@ for k in range(int(DUR / 4.5) + 2):
     i = int(t0 * SR); a, b = max(0, i), min(L, i + n)
     if b <= a: continue
     seg = car[a - i:b - i]; pan = np.linspace(-0.8, 0.8, n)[a - i:b - i] * (1 if rng.random() < 0.5 else -1)
-    g = db(rng.uniform(-44, -38))
+    g = db(rng.uniform(-40, -34))
     mix[0, a:b] += seg * g * np.cos((pan + 1) * np.pi / 4) * 1.41; mix[1, a:b] += seg * g * np.sin((pan + 1) * np.pi / 4) * 1.41
 # sparrows in the trees now and then
 t = rng.uniform(0.3, 2.0)
 while t < DUR:
     place(mix, lp(chirp(), 7000), t, db(rng.uniform(-46, -38)), pan=rng.uniform(-0.8, 0.8)); t += rng.uniform(1.5, 4.5)
 
+for tr in ev.get('trains', []):
+    # loudest with the middle of the train over the court; it comes from the left and goes off right; cut at the edit
+    dur = 14.0; x = train(dur, tr.get('speed', 18)); tt = np.arange(len(x)) / SR - dur / 2
+    env = np.exp(-(tt / 3.2) ** 2) * 0.85 + 0.15 * np.exp(-(tt / 7) ** 2)
+    i0 = int((tr['t'] - dur / 2) * SR); a, b = max(i0, int(tr['t0'] * SR)), min(i0 + len(x), int(tr['t1'] * SR), mix.shape[1])
+    if b > a:
+        seg = (x * env)[a - i0:b - i0].copy(); f = min(len(seg), int(0.04 * SR)); seg[-f:] *= np.linspace(1, 0, f)
+        pan = np.clip(tt[a - i0:b - i0] / 4.0, -0.9, 0.9); g = db(-13)
+        mix[0, a:b] += seg * g * np.cos((pan + 1) * np.pi / 4) * 1.41; mix[1, a:b] += seg * g * np.sin((pan + 1) * np.pi / 4) * 1.41
 for b in ev['bounces']:
     place(mix, verb(bounce(rng.uniform(0.96, 1.05)), 0.5), b['t'] - 0.002, db(-8) * b.get('gain', 1), pan=rng.uniform(-0.12, 0.12))
 for s in ev.get('steps', []):

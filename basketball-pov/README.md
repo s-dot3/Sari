@@ -3,7 +3,7 @@
 2K-style gameplay clips and breakdowns, rendered from three.js and driven by real motion capture.
 
 - **Compilation:** every basketball video below, v1 to v11, back to back in one portrait clip. [`out/compilation.mp4`](out/compilation.mp4) (6:37, 720×1280, 30 fps, H.264 + AAC; the landscape v1-v3 sit over a blurred fill)
-- **v14 (latest): "Street Court".** The user's own clip of a skeleton cooking his man on an outdoor court, rebuilt for real: the same park court at the end of an autumn afternoon (blue-grey asphalt, white and light-blue lines, chain-link fence, the crowd along it, the brick building with the mural, bare trees, the skyline), the same two defenders, but every handle a real one from motion capture at the speed it was played, three possessions instead of one, filmed from behind his shoulder instead of side-on, and no talking on the soundtrack. [`out/street_court.mp4`](out/street_court.mp4) (1080×1920 portrait, 30 fps, H.264 + AAC)
+- **v14 (latest): "Under the El".** A brand-new street-ball clip in the style of the user's own (a skeleton cooking people at a park court with a crowd round it, shot on a phone), but a different court, different people and different plays: a city court on a sunny afternoon beside an elevated subway line (a train goes by), the skeleton against a man in a royal-blue tank and a man in a gold tee, three possessions of real handles into real finishes, filmed from behind his shoulder, with no talking on the soundtrack. [`out/under_the_el.mp4`](out/under_the_el.mp4) (1080×1920 portrait, 30 fps, H.264 + AAC)
 - v13: "Game Speed". Four new plays at full speed, each one take from the first dribble to the net, no freezes and no slow motion: a crossover drive into a layup off the glass, a spin move into a pull-up, through the legs into a step-back three, and a double crossover into a pull-up. [`out/game_speed.mp4`](out/game_speed.mp4) (1080×1920 portrait, 30 fps, H.264 + AAC)
 - v12: "Read the Room". Not basketball: a split screen, what he does on top and what his brain does underneath at the same moment, as one guy walks up to three people mid-conversation, checked out and then locked in, and why the locked-in one develops faster. [`out/read_the_room.mp4`](out/read_the_room.mp4) (1080×1920 portrait, 30 fps, H.264 + AAC)
 - v11: film room, "Behind the Curtain". A sharp player learns a new move (between the legs, cross, cross back, step-back) at rep 1, rep 3 and rep 6, then makes it his own live. Every rep plays as it looks in the gym, then the picture splits like a curtain onto what he's running behind it: his eyes, the steps fusing into chunks, his man's weight, his options. [`out/behind_the_curtain.mp4`](out/behind_the_curtain.mp4) (1080×1920 portrait, 30 fps, H.264 + AAC)
@@ -35,10 +35,11 @@ It writes three files:
 
 ## v14: what it shows
 
-Three possessions on the street court, each one take from behind the ball handler's shoulder, like someone on the
-court filming on a phone (it follows him, shakes a little, rises to the rim for the finish). The defenders are the two
-from the original clip: white long sleeves and red shorts with the blue headband, and black tank top with grey
-shorts. The crowd stands along the fence in twos and threes and watches the ball handler, a few filming.
+Three possessions on a city park court under an elevated subway line on a sunny afternoon, each one take from behind
+the ball handler's shoulder, like someone on the court filming on a phone (it follows him, shakes a little, rises to
+the rim for the finish). His defenders: a man in a royal-blue tank top and black shorts, and a man in a gold tee and
+charcoal shorts. The crowd stands along the sidelines in twos and threes, sits on the benches, and watches through the
+baseline fence from the sidewalk; a few film it. A train goes over on the el during the first possession.
 
 | Possession | What happens |
 |---|---|
@@ -55,16 +56,18 @@ shorts. The crowd stands along the fence in twos and threes and watches the ball
   reaction time (0.25 s) after the ball handler gets out of line he moves to get back in front with real footwork: a
   slide either way (78_30), giving ground over a shoulder (78_28) or chopping up (78_25, 78_27). The move is chosen for
   where the ball handler will be when it ends, measured from each take, and cut short into his stance. On the final
-  move he bites the wrong way and is beaten.
-- **Scene:** `src/street.js` paints the asphalt (cracks, patches, worn paint, blown leaves, a close-up stone grain),
-  builds the fence, the outdoor hoop (painted steel board, double rim, gooseneck pole), the brick building and its
-  mural, bare trees grown branch by branch, and the skyline. Everything past the fence has the low sun baked into its
-  colours; the court is in the buildings' shade and lit by the sky. `src/crowd14.js` poses the crowd (Rocketbox bodies in
-  everyday clothes from `tools/prep_street.py`) with the rig's IK, heads following the play.
-- **Sound:** `tools/audio_street.py`: the city (traffic rumble, cars on the far street, wind, the odd sparrow), every
-  dribble on asphalt with its slap-back off the brick building, the sneakers on every step and cut, the steel board,
-  the net. No voices.
-- **Files:** `src/play14.js`, `src/timeline14.js`, `src/street.js`, `src/crowd14.js`, `src/main14.js`,
+  move he bites the wrong way and is beaten (on the drive he turns and chases it).
+- **Scene:** `src/elcourt.js` paints the court (green with a brick-red key and border over cracked asphalt, worn
+  paint, scuffs, a close-up stone grain), builds the fence and benches, a parks-department hoop (white steel board,
+  double rim, chain net), the street with its kerbs and parked cars, the el's riveted steel on its columns and a
+  five-car train, the walk-ups across the street with storefronts and fire escapes, plane trees in leaf (leaf cards,
+  their shadows dappling the court) and the towers further off. The sun is real (hard shadows); everything past the
+  fence has it baked into its colours. `src/crowd14.js` poses the crowd (Rocketbox bodies in summer clothes from
+  `tools/prep_street.py`) with the rig's IK, standing and sitting, heads following the play.
+- **Sound:** `tools/audio_street.py`: the street (traffic under the el, cars going by, wind in the trees, the odd
+  sparrow), the train going over, every dribble with its slap-back off the walk-ups, the sneakers on every step and
+  cut, the steel board, the chain net. No voices.
+- **Files:** `src/play14.js`, `src/timeline14.js`, `src/elcourt.js`, `src/crowd14.js`, `src/main14.js`,
   `src/index14.html`, `tools/prep_street.py`, `tools/audio_street.py`.
 
 ## v13: what it shows
@@ -461,7 +464,7 @@ npm install
 pip install pillow numpy scipy imageio-ffmpeg trimesh networkx mediapipe nibabel scikit-image
 npm run assets      # Rocketbox models + uniforms, CMU mocap clips, the v12 brain
 npm run preview:v14 # quick 540x960 check of v14
-npm run render:v14  # final 1080x1920 v14 with audio -> out/street_court.mp4
+npm run render:v14  # final 1080x1920 v14 with audio -> out/under_the_el.mp4
 npm run preview:v13 # quick 540x960 check of v13
 npm run render:v13  # final 1080x1920 v13 with audio -> out/game_speed.mp4
 npm run preview:v12 # quick 540x960 check of v12
