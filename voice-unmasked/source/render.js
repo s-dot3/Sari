@@ -3,12 +3,12 @@ const { chromium } = require('/opt/node22/lib/node_modules/playwright');
 const path = require('path'), fs = require('fs'), { spawn } = require('child_process');
 (async () => {
   const [mode, out, ...rest] = process.argv.slice(2);
-  const browser = await chromium.launch({ args: ['--allow-file-access-from-files', '--disable-gpu'] });
+  const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
   const page = await browser.newPage({ viewport: { width: 1080, height: 1920 }, deviceScaleFactor: 1 });
   const errs = [];
   page.on('pageerror', e => errs.push(e.message)); page.on('console', m => { if (m.type() === 'error') errs.push(m.text()); });
-  await page.goto('file://' + path.resolve(__dirname, 'index.html'));
-  await page.waitForFunction(() => window.READY === true || window.__err, null, { timeout: 30000 }).catch(() => {});
+  await page.goto(process.env.PAGE_URL || 'http://127.0.0.1:8766/index.html');
+  await page.waitForFunction(() => window.READY === true || window.__err, null, { timeout: 120000 }).catch(() => {});
   if (errs.length) { console.error('PAGE ERRORS:', errs.join('\n')); }
   if (mode === 'preview') {
     fs.mkdirSync(out, { recursive: true });

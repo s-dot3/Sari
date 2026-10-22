@@ -88,7 +88,7 @@ grad('l', 'gBarGold', [[0, '#fff3b0'], [1, '#ffaa1c']], { x1: 0, y1: 0, x2: 0, y
 grad('r', 'gOrb', [[0, '#ffffff'], [.35, '#fff1b0'], [.7, '#ffcc4d', .55], [1, '#ffaa00', 0]], { cx: .5, cy: .5, r: .5 });
 
 /* ---------------- layers ---------------- */
-const bg = el('g', null, root);
+const bg = el('g', null, document.getElementById('back'));
 el('rect', { width: 1080, height: 1920, fill: '#07080b' }, bg);
 el('rect', { width: 1080, height: 1920, fill: 'url(#gBg)' }, bg);
 const bgTint = el('rect', { width: 1080, height: 1920, fill: 'url(#gTint)', opacity: 0 }, bg);
@@ -531,291 +531,237 @@ function newScene(ci) {
 }
 const SEG = t => `M 0,0`;
 
-/* ===== 1 · THE HOOK ===== */
+/* ---------------- real-anatomy helpers ---------------- */
+function makeLabel(parent, txt, col, txtCol = '#0b0b0e', size = 31) {
+  const L = {};
+  L.line = el('path', { fill: 'none', stroke: col, 'stroke-width': 4, 'stroke-linecap': 'round', opacity: 0 }, parent);
+  L.ring = el('circle', { r: 10, fill: 'none', stroke: col, 'stroke-width': 3, opacity: 0 }, parent);
+  L.dot = el('circle', { r: 8, fill: col, stroke: '#0b0b0e', 'stroke-width': 3, opacity: 0 }, parent);
+  L.g = el('g', { opacity: 0 }, parent);
+  L.r = el('rect', { height: size + 28, rx: (size + 28) / 2, fill: col }, L.g);
+  L.t = el('text', { x: 24, y: size + 6, 'font-size': size, fill: txtCol, 'letter-spacing': 2 }, L.g); L.t.textContent = txt;
+  L.w = L.t.getComputedTextLength() + 48; L.h = size + 28; set(L.r, { width: r1(L.w) });
+  return L;
+}
+function placeLabel(L, x, y, ax, ay, op, t, align = 'left') {
+  op = clamp(op); const k = back(op), lx = align === 'left' ? x : x - L.w;
+  set(L.g, { opacity: r3(op), transform: `translate(${r1(lx)},${r1(y)}) translate(${r1(L.w / 2)},${r1(L.h / 2)}) scale(${r3(.7 + .3 * k)}) translate(${r1(-L.w / 2)},${r1(-L.h / 2)})` });
+  const ex = ax < lx + L.w / 2 ? lx : lx + L.w, ey = y + L.h / 2;
+  set(L.line, { d: `M ${r1(ex)},${r1(ey)} L ${r1(ax)},${r1(ay)}`, opacity: r3(op * .9) });
+  set(L.dot, { cx: r1(ax), cy: r1(ay), opacity: r3(op) });
+  const pr = (t * 1.4) % 1; set(L.ring, { cx: r1(ax), cy: r1(ay), r: r1(10 + pr * 26), opacity: r3(op * (1 - pr) * .8) });
+}
+function makeCredit(parent) { const c = el('text', { x: 540, y: 1895, 'text-anchor': 'middle', 'font-size': 18, fill: '#fff', opacity: .55, 'font-weight': 700 }, parent); c.textContent = 'BodyParts3D, © The Database Center for Life Science licensed under CC Attribution 4.0 International'; return c; }
+function makeRipples(parent, n, col) { return [...Array(n)].map(() => el('circle', { fill: 'none', stroke: col, 'stroke-width': 4, opacity: 0, filter: 'url(#gl5)' }, parent)); }
+function updRipples(arr, x, y, t, on, ra = 20, rb = 140, per = .5) {
+  arr.forEach((c, i) => { const ph = ((t / per) + i / arr.length) % 1; set(c, { cx: r1(x), cy: r1(y), r: r1(ra + ph * (rb - ra)), opacity: r3(clamp(on) * (1 - ph) * .8), 'stroke-width': r1(5 * (1 - ph) + 1) }); });
+}
+function makePiP(parent, cx = 182, cy = 1296, r = 136) {
+  const P = { cx, cy, r, g: el('g', { opacity: 0 }, parent) };
+  const cid = 'pip' + (++UID); const cp = el('clipPath', { id: cid }, defs); el('circle', { cx, cy, r }, cp);
+  el('circle', { cx, cy: cy + 8, r: r + 6, fill: '#000', opacity: .55, filter: 'url(#b12)' }, P.g);
+  el('circle', { cx, cy, r, fill: '#1b2030' }, P.g);
+  const inner = el('g', { 'clip-path': `url(#${cid})` }, P.g);
+  el('circle', { cx, cy: cy - 20, r: r * 1.05, fill: 'url(#gHalo)', opacity: .22 }, inner);
+  P.ch = makeChar(inner); set(P.ch.shadow, { opacity: 0 });
+  el('circle', { cx, cy, r, fill: 'none', stroke: '#FFD43B', 'stroke-width': 6 }, P.g);
+  const tr = el('rect', { y: cy - r - 30, height: 46, rx: 23, fill: '#FFD43B' }, P.g);
+  const tt = el('text', { x: cx, y: cy - r + 2, 'text-anchor': 'middle', 'font-size': 25, fill: '#0b0b0e', 'letter-spacing': 3 }, P.g); tt.textContent = 'YOU DO THIS';
+  const tw = tt.getComputedTextLength() + 36; set(tr, { x: r1(cx - tw / 2), width: r1(tw) });
+  return P;
+}
+function updPiP(P, s, fr, op) {
+  s.x = P.cx; s.y = P.cy + 22; s.sc = .5; updChar(P.ch, s, fr);
+  set(P.g, { opacity: r3(clamp(op)), transform: `translate(${P.cx},${P.cy}) scale(${r3(.8 + .2 * back(clamp(op)))}) translate(${-P.cx},${-P.cy})` });
+}
+function titleBar(parent) {
+  const g = el('g', null, parent);
+  el('rect', { x: 330, y: 486, width: 420, height: 14, rx: 7, fill: '#fff', opacity: .16 }, g);
+  const f = el('rect', { x: 330, y: 486, width: 0, height: 14, rx: 7, fill: '#FFD43B' }, g);
+  const d = el('circle', { cy: 493, r: 13, fill: '#FFD43B', filter: 'url(#gl5)' }, g);
+  return (p, on) => { set(f, { width: r1(420 * p) }); set(d, { cx: r1(330 + 420 * p), opacity: on ? 1 : 0 }); };
+}
+
+/* ===== 1 · THE HOOK (real anatomy under a stone shell) ===== */
 (() => {
-  const S = newScene(1), L = S.layer;
-  const wThroat = WD(1, 'throat'), wMono = WD(1, 'monotone'), wFive = WD(1, 'five'), wDrills = WD(1, 'drills'), wMask2 = WD(1, 'mask', 1), wComes = WD(1, 'comes'), wOff = WD(1, 'off');
+  const S = newScene(1), L = S.layer; S.uses3D = true;
+  const wThroat = WD(1, 'throat'), wMono = WD(1, 'monotone'), wFive = WD(1, 'five'), wComes = WD(1, 'comes');
   const TR = wComes.t0 - .03;
-  const MIR = 'M 150,1590 L 150,960 A 390,390 0 0 1 930,960 L 930,1590 Z';
-  el('path', { d: MIR, fill: '#000', opacity: .6, filter: 'url(#b26)', transform: 'translate(0,26)' }, L);
-  el('path', { d: MIR, fill: 'url(#gGlass)' }, L);
-  const mcp = el('clipPath', { id: 'mirClip' }, defs); el('path', { d: MIR }, mcp);
-  const inM = el('g', { 'clip-path': 'url(#mirClip)' }, L);
-  const halo = el('circle', { cx: 540, cy: 930, r: 430, fill: 'url(#gHalo)', opacity: 0 }, inM);
-  const rays = el('g', { opacity: 0, filter: 'url(#b6)' }, inM);
-  for (let i = 0; i < 16; i++) { const a = i / 16 * Math.PI * 2, d = .065; el('path', { d: `M 0,0 L ${r1(Math.cos(a - d) * 1000)},${r1(Math.sin(a - d) * 1000)} L ${r1(Math.cos(a + d) * 1000)},${r1(Math.sin(a + d) * 1000)} Z`, fill: '#ffd27a', opacity: i % 2 ? .35 : .6 }, rays); }
-  const ch = makeChar(inM);
-  // stone mask
-  const MASK = 'M 0,-126 C 94,-126 162,-86 166,-10 C 170,66 142,150 92,192 C 62,214 30,222 0,222 C -30,222 -62,214 -92,192 C -142,150 -170,66 -166,-10 C -162,-86 -94,-126 0,-126 Z';
-  const mk = el('g', null, ch.maskHolder);
-  const mki = el('g', null, mk);
-  el('path', { d: MASK, fill: '#000', opacity: .45, filter: 'url(#b8)', transform: 'translate(6,10)' }, mki);
-  const kcp = el('clipPath', { id: 'maskClip' }, defs); el('path', { d: MASK }, kcp);
-  const mtex = el('g', { 'clip-path': 'url(#maskClip)' }, mki);
-  el('image', { href: 'stone.png', x: -180, y: -140, width: 360, height: 380, preserveAspectRatio: 'none' }, mtex);
-  el('path', { d: MASK, fill: 'url(#gMaskShade)' }, mtex);
-  el('path', { d: 'M -112,-50 Q -64,-74 -18,-52 M 18,-52 Q 64,-74 112,-50', fill: 'none', stroke: '#55585e', 'stroke-width': 12, 'stroke-linecap': 'round' }, mtex);
-  el('path', { d: 'M -112,-58 Q -64,-82 -18,-60 M 18,-60 Q 64,-82 112,-58', fill: 'none', stroke: '#c4c7cc', 'stroke-width': 3, opacity: .35, 'stroke-linecap': 'round' }, mtex);
-  for (const s of [-1, 1]) {
-    el('path', { d: `M ${s * 100},-10 Q ${s * 62},-30 ${s * 26},-10 Q ${s * 62},4 ${s * 100},-10 Z`, fill: '#26282c' }, mtex);
-    el('path', { d: `M ${s * 98},-6 Q ${s * 62},8 ${s * 28},-6`, fill: 'none', stroke: '#c4c7cc', 'stroke-width': 2.5, opacity: .3 }, mtex);
-  }
-  el('path', { d: 'M -14,-34 L -28,66 Q 0,80 28,66 L 14,-34 Z', fill: 'url(#gMaskNose)', opacity: .9 }, mtex);
-  el('path', { d: 'M -28,66 Q 0,80 28,66', fill: 'none', stroke: '#2e3034', 'stroke-width': 4, opacity: .7 }, mtex);
-  el('path', { d: 'M -54,130 L 54,130', fill: 'none', stroke: '#24262a', 'stroke-width': 9, 'stroke-linecap': 'round' }, mtex);
-  el('path', { d: 'M -50,138 L 50,138', fill: 'none', stroke: '#c4c7cc', 'stroke-width': 2.5, opacity: .3, 'stroke-linecap': 'round' }, mtex);
-  el('path', { d: MASK, fill: 'none', stroke: '#33353a', 'stroke-width': 7 }, mki);
-  el('path', { d: MASK, fill: 'none', stroke: '#d6d9de', 'stroke-width': 2.5, opacity: .3, transform: 'scale(.965)' }, mki);
-  const CRACKS = [
-    ['M -20,-126 L -30,-90 L -12,-62 L -36,-30 L -26,-4', 'M -12,-62 L 14,-70 L 30,-96'],
-    ['M 166,30 L 128,40 L 112,72 L 76,80 L 56,112 L 64,150', 'M 112,72 L 128,108 L 118,140'],
-    ['M -150,110 L -118,96 L -96,120 L -62,104 L -40,128 L -10,116 L 10,138', 'M -96,120 L -104,160 L -86,190', 'M -62,104 L -70,70 L -96,58'],
-    ['M 40,222 L 34,190 L 52,170 L 40,140', 'M 120,-90 L 100,-64 L 114,-36 L 92,-12'],
-  ];
-  const crackEls = CRACKS.map(set => set.map(d => [
-    el('path', { d, fill: 'none', stroke: '#c9ccd1', 'stroke-width': 2, opacity: .35, pathLength: 1, 'stroke-dasharray': '1 1', 'stroke-dashoffset': 1, transform: 'translate(1.5,1.5)', 'stroke-linejoin': 'round' }, mki),
-    el('path', { d, fill: 'none', stroke: '#121315', 'stroke-width': 4.5, pathLength: 1, 'stroke-dasharray': '1 1', 'stroke-dashoffset': 1, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }, mki)]));
-  const crackT = [wThroat.t0 + .02, wMono.t0 + .02, wFive.t0 + .02, wMask2.t0 - .05];
-  // glass reflections
-  const refl = el('g', { 'clip-path': 'url(#mirClip)' }, L);
-  const st1 = el('path', { d: 'M -150,0 L -10,0 L -470,1700 L -610,1700 Z', fill: '#fff', opacity: .05 }, refl);
-  const st2 = el('path', { d: 'M 30,0 L 66,0 L -394,1700 L -430,1700 Z', fill: '#fff', opacity: .07 }, refl);
-  el('path', { d: MIR, fill: 'none', stroke: 'url(#gGold)', 'stroke-width': 30 }, L);
-  el('path', { d: 'M 168,1574 L 168,960 A 372,372 0 0 1 912,960 L 912,1574 Z', fill: 'none', stroke: '#fff4cc', 'stroke-width': 2, opacity: .45 }, L);
-  el('path', { d: 'M 132,1606 L 132,960 A 408,408 0 0 1 948,960 L 948,1606 Z', fill: 'none', stroke: '#5b3f10', 'stroke-width': 3, opacity: .7 }, L);
-  // debris + dust (screen)
-  const fx = el('g', null, L);
-  const chips = [...Array(30)].map((_, i) => {
-    const pts = [...Array(5)].map((__, j) => { const a = j / 5 * 6.28 + hash(i * 9 + j) * .8, r = 7 + hash(i * 5 + j * 3) * 13; return `${r1(Math.cos(a) * r)},${r1(Math.sin(a) * r)}`; }).join(' ');
-    return { e: el('polygon', { points: pts, fill: ['#8f9298', '#6d7076', '#5a5d63'][i % 3], opacity: 0 }, fx), a: hash(i * 1.3) * 6.28, v: 500 + hash(i * 2.7) * 900, sp: (hash(i * 4.1) - .5) * 900, ox: (hash(i * 6.6) - .5) * 220, oy: (hash(i * 8.8) - .5) * 260 };
-  });
-  const dust = [...Array(8)].map((_, i) => ({ e: el('circle', { r: 40, fill: '#a7aab0', opacity: 0, filter: 'url(#b18)' }, fx), a: hash(i * 3.3) * 6.28, d: 80 + hash(i * 4.4) * 140 }));
+  const labT = makeLabel(L, 'THROAT TENSION', '#ff4d5e', '#fff');
+  const labM = makeLabel(L, 'MONOTONE', '#b9c0cc');
+  const labV = makeLabel(L, 'YOUR REAL VOICE', '#FFD43B');
+  makeCredit(S.ui);
   S.title = makeTitle(S.ui, { lines: ['YOUR VOICE', 'IS BURIED'], colors: { BURIED: '#FFD43B' }, y: 392 });
   S.update = (lt, t, fr, st) => {
     updTitle(S.title, lt + .5);
-    const s = baseState(lt, 0);
-    s.x = 540; s.y = 960; s.sc = lerp(.9, .95, eIO(lt / S.clip.dur));
-    const tau = lt - TR;
-    // before rip: tense; after: grin
-    if (tau < 0) { s.eye = 1; s.mouth.smile = 0; }
-    else {
-      const surprise = bump(tau, 0, .08, .35);
-      s.eye = .7 + .42 * surprise; s.browL.r = s.browR.r = .9 * surprise + .25 * eOut(inv(.3, .6, tau));
-      s.mouth.smile = lerp(.1, 1, eOut(inv(.12, .4, tau))); s.mouth.open = .28 * eOut(inv(.12, .4, tau)) + .1 * surprise;
-      s.squint = .1 + .3 * eOut(inv(.2, .5, tau));
-      s.hr += -4 * bump(tau, 0, .07, .4); s.hx += -10 * bump(tau, 0, .07, .4);
-      s.glow = .95 * bump(tau, 0, .06, 1.6) + .12;
-    }
-    // grab + rip
-    s.pose = 'grab';
-    const reach = eOut(inv(wMask2.t0 - .4, wMask2.t0 - .02, lt));
-    const yank = tau > 0 ? eIn(inv(0, .22, tau)) : 0;
-    const release = tau > 0 ? eIO(inv(.22, .6, tau)) : 0;
-    s.poseT = reach * (1 - release);
-    s.poseX = yank * 330; s.poseY = -yank * 160; s.handRot = -yank * 25;
-    // mask transform (head-local)
-    const jit = tau < 0 ? 3.2 * eIn(inv(wFive.t0, TR, lt)) : 0;
-    let mx = noise(lt * 38) * jit, my = noise(lt * 41 + 9) * jit, mr = noise(lt * 33 + 4) * jit * .6, ms = 1, mo = 1;
-    if (tau > 0) { const u = tau; mx = 330 * yank + 1500 * Math.max(0, u - .22); my = -160 * yank - 500 * Math.max(0, u - .22) + 1500 * Math.pow(Math.max(0, u - .22), 2); mr = 26 * yank + 160 * Math.max(0, u - .22); ms = 1 + .4 * Math.max(0, u - .1); mo = 1 - inv(.45, .7, u); }
-    set(mk, { transform: `translate(${r1(mx)},${r1(my)}) rotate(${r1(mr)} 0 40) scale(${r3(ms)})`, opacity: r3(mo), display: mo > 0 ? 'inline' : 'none' });
-    crackEls.forEach((grp, gi) => { const p = eOut(inv(crackT[gi], crackT[gi] + .22, lt)); grp.forEach(([a, b]) => { set(a, { 'stroke-dashoffset': r3(1 - p) }); set(b, { 'stroke-dashoffset': r3(1 - p) }); }); });
-    updChar(ch, s, fr);
-    // rays / halo
-    const rv = tau > 0 ? bump(tau, .02, .2, 2.2) * .9 + .2 * inv(0, .3, tau) : 0;
-    set(rays, { opacity: r3(rv), transform: `translate(540,${r1(960 - 20)}) rotate(${r1(lt * 12)})` });
-    set(halo, { opacity: r3(tau > 0 ? clamp(rv * 1.1) : 0) });
-    // reflections drift
-    set(st1, { transform: `translate(${r1(200 + lt * 60)},0)` }); set(st2, { transform: `translate(${r1(320 + lt * 60)},0)` });
-    // debris
-    const fcx = 540 + 1 * .93, fcy = 960 + 40 * .93;
-    chips.forEach(c => {
-      if (tau <= 0) { set(c.e, { opacity: 0 }); return; }
-      const u = tau; const x = fcx + 120 + c.ox + Math.cos(c.a) * c.v * u * .55 + 380 * u, y = fcy + c.oy + Math.sin(c.a) * c.v * u * .55 + 1300 * u * u;
-      set(c.e, { opacity: r3(clamp(1 - u / 1.1)), transform: `translate(${r1(x)},${r1(y)}) rotate(${r1(c.sp * u)})` });
+    const tau = lt - TR, D = S.clip.dur;
+    const orb = lerp(.6, .22, eIO(lt / D)), dist = lerp(140, 124, eIO(lt / D)) - (tau > 0 ? 14 * eIO(inv(0, 1.3, tau)) : 0);
+    const sh = lt > wFive.t0 && tau < 0 ? .4 * eIn(inv(wFive.t0, TR, lt)) : 0;
+    const stone = tau < .7 ? 1 : 0;
+    const dis = tau > 0 && stone ? eIO(inv(0, .62, tau)) : 0;
+    const ghost = tau > 0 ? eIO(inv(.55, .95, tau)) : 0;
+    const vg = tau > 0 ? bump(tau, .25, .35, 2.2) * .7 + .3 * inv(.2, .6, tau) : 0;
+    const A = ANAT.render({
+      frame: fr, t: lt, fov: 30,
+      cam: [Math.sin(orb) * dist, 5 + 3 * Math.sin(lt * .4), Math.cos(orb) * dist], target: [noise(lt * 30) * sh, -1 + noise(lt * 33 + 7) * sh, 0],
+      stone, crack: Math.min(1, .45 * eOut(inv(wThroat.t0, wThroat.t0 + .3, lt)) + .3 * eOut(inv(wMono.t0, wMono.t0 + .3, lt)) + .4 * eOut(inv(wFive.t0, wFive.t0 + .3, lt))),
+      dissolve: dis, tension: stone ? win(lt, wThroat.t0, .25, TR, .2) : 0, skinOp: stone ? 1 : ghost, hideAll: tau < .02,
+      parts: { thyroid: { emissive: 0xffa020, ei: .55 * vg }, vligL: { emissive: 0xffd43b, ei: 1.4 * vg }, vligR: { emissive: 0xffd43b, ei: 1.4 * vg }, vocalis: { emissive: 0xff8a30, ei: .4 * vg } },
+      glows: [{ p: [0, .8, 1.4], r: 11 + 5 * vg, a: .85 * vg, c: 0xffb340 }],
+      flow: [{ path: 'mouth', head: tau > .3 ? eOut(inv(.3, 1.1, tau)) : 0, a: tau > .3 ? .75 : 0 }],
+      particles: { path: 'mouth', a: tau > .3 ? .7 * inv(.3, .6, tau) : 0, speed: .45 },
+      anchors: { throat: [0, .5, 3.4], mouth: [0, 5.8, 9.4], lx: [0, .8, 1.2] },
     });
-    dust.forEach(d => {
-      if (tau <= 0) { set(d.e, { opacity: 0 }); return; }
-      const u = tau; set(d.e, { cx: r1(fcx + 100 + Math.cos(d.a) * d.d * eOut(u / .8) + 160 * u), cy: r1(fcy + Math.sin(d.a) * d.d * eOut(u / .8)), r: r1(40 + 90 * eOut(u / .9)), opacity: r3(.35 * (1 - inv(0, 1, u))) });
-    });
-    st.tintColor = tau < 0 ? '#3d5a8a' : '#ffb347'; st.tint = tau < 0 ? .5 : .32 * bump(tau, 0, .1, 1.5) + .08;
-    st.shake = tau > 0 ? 10 * (1 - inv(0, .35, tau)) : (lt > wFive.t0 ? 1.5 : 0);
-    st.flash = tau > 0 ? .35 * (1 - inv(0, .25, tau)) : 0;
+    placeLabel(labT, 700, 1150, A.throat[0], A.throat[1], win(lt, wThroat.t0 - .05, .22, TR - .15, .15), lt);
+    placeLabel(labM, 380, 760, A.mouth[0], A.mouth[1], win(lt, wMono.t0 - .05, .22, TR - .15, .15), lt, 'right');
+    placeLabel(labV, 640, 1250, A.lx[0], A.lx[1], tau > 0 ? eOut(inv(.5, .8, tau)) : 0, lt);
+    st.tintColor = tau < 0 ? '#3d5a8a' : '#ffb347'; st.tint = tau < 0 ? .35 : .3 * bump(tau, 0, .1, 1.5) + .1;
+    st.shake = tau > 0 ? 9 * (1 - inv(0, .35, tau)) : 0;
+    st.flash = tau > 0 ? .3 * (1 - inv(0, .25, tau)) : 0;
   };
 })();
 
 /* ===== 2 · LIP TRILLS ===== */
 (() => {
-  const S = newScene(2), L = S.layer;
-  const T0 = WD(2, 'motorboat').t0 - .1;
-  const ch = makeChar(L);
-  const waves = el('g', { filter: 'url(#gl5)' }, L);
-  const W = [...Array(9)].map(() => [el('path', { fill: 'none', stroke: '#7febff', 'stroke-linecap': 'round' }, waves), el('path', { fill: 'none', stroke: '#7febff', 'stroke-linecap': 'round' }, waves)]);
+  const S = newScene(2), L = S.layer; S.uses3D = true;
+  const T0 = WD(2, 'motorboat').t0 - .1, wThis = WD(2, 'this');
+  const rip = makeRipples(L, 4, '#7febff');
+  const labL = makeLabel(L, 'LIPS: LOOSE + BUZZING', '#7febff');
+  const labC = makeLabel(L, 'VOCAL CORDS: NO SQUEEZE', '#3ddc84');
+  const pip = makePiP(L);
+  makeCredit(S.ui);
   S.title = makeTitle(S.ui, { pill: 'DRILL 1', lines: ['20 SECONDS'] });
-  const bar = el('g', null, S.ui);
-  el('rect', { x: 330, y: 486, width: 420, height: 14, rx: 7, fill: '#fff', opacity: .16 }, bar);
-  const barF = el('rect', { x: 330, y: 486, width: 0, height: 14, rx: 7, fill: '#FFD43B' }, bar);
-  const barD = el('circle', { cy: 493, r: 13, fill: '#FFD43B', filter: 'url(#gl5)' }, bar);
+  const bar = titleBar(S.ui);
   S.update = (lt, t, fr, st) => {
     updTitle(S.title, lt);
+    const tr = eOut(inv(T0, T0 + .18, lt)), relax = eOut(inv(wThis.t0 - .05, wThis.t0 + .3, lt)), D = S.clip.dur;
+    const ang = lerp(.8, .62, eIO(lt / D)), dist = lerp(84, 74, eIO(lt / D));
+    const A = ANAT.render({ frame: fr, t: lt, fov: 30, cam: [Math.sin(ang) * dist, 10, Math.cos(ang) * dist], target: [0, 3.5, 3],
+      trill: tr, vibrate: .6 * relax,
+      parts: { lip: { visible: true, emissive: 0x4fd8ff, ei: .45 * tr }, vligL: { emissive: 0x3ddc84, ei: 1.4 * relax }, vligR: { emissive: 0x3ddc84, ei: 1.4 * relax } },
+      flow: [{ path: 'mouth', head: 1, a: .5 * tr, c1: 0x7febff, c2: 0xbff6ff }],
+      particles: { path: 'mouth', a: .85 * tr, speed: .6, size: .8 },
+      glows: [{ p: [0, 5.7, 9.3], r: 7, a: .5 * tr * (.7 + .3 * Math.sin(lt * 40)), c: 0x7febff }, { p: [0, .45, .9], r: 8, a: .7 * relax, c: 0x3ddc84 }],
+      anchors: { lips: [0, 5.7, 9.4], cords: [0, .45, .9] } });
+    updRipples(rip, A.lips[0], A.lips[1], lt, tr, 30, 190, .42);
+    placeLabel(labL, 560, 600, A.lips[0], A.lips[1], eOut(inv(T0 + .1, T0 + .35, lt)), lt);
+    placeLabel(labC, 470, 1110, A.cords[0], A.cords[1], relax, lt);
     const s = baseState(lt, 2);
-    const sc = lerp(2.42, 2.56, eIO(lt / S.clip.dur));
-    s.sc = sc; s.x = 540; s.y = 1110 - 128 * sc; s.hr *= .5; s.hx *= .4; s.hy *= .4;
-    const tr = eOut(inv(T0, T0 + .18, lt));
     s.mouth = { open: .05 + .1 * tr, wide: 1, smile: .25 * (1 - tr), pucker: .6 * tr, trill: tr };
     s.browL.r = s.browR.r = .25 * tr; s.squint = .15;
-    s.hx += noise(lt * 30) * 1.5 * tr; s.hy += noise(lt * 31 + 3) * 1.5 * tr;
-    updChar(ch, s, fr);
-    const mx = 540 + s.hx * sc, my = 1110 + s.hy * sc;
-    W.forEach((pair, k) => {
-      const per = .16, n = Math.floor((lt - T0) / per) - k, born = T0 + n * per, age = lt - born;
-      const ok = lt > T0 && age >= 0 && age < 1.2 && born >= T0;
-      pair.forEach((p, side) => {
-        if (!ok) { set(p, { opacity: 0 }); return; }
-        const R = 150 + age * 340, a0 = side ? -0.36 : Math.PI - 0.36, a1 = side ? 0.36 : Math.PI + 0.36;
-        const d = `M ${r1(mx + Math.cos(a0) * R)},${r1(my + Math.sin(a0) * R)} A ${r1(R)},${r1(R)} 0 0 1 ${r1(mx + Math.cos(a1) * R)},${r1(my + Math.sin(a1) * R)}`;
-        set(p, { d, opacity: r3(Math.pow(1 - age / 1.2, 1.5) * .7 * tr), 'stroke-width': r1(9 * (1 - age / 1.2) + 2) });
-      });
-    });
-    const pr = inv(T0, S.clip.dur, lt);
-    set(barF, { width: r1(420 * pr) }); set(barD, { cx: r1(330 + 420 * pr), opacity: r3(lt > T0 ? 1 : 0) });
-    st.tintColor = '#2f7fa0'; st.tint = .35 * tr;
+    updPiP(pip, s, fr, eOut(inv(.1, .4, lt)));
+    bar(inv(T0, D, lt), lt > T0);
+    st.tintColor = '#2f7fa0'; st.tint = .3 * tr;
   };
 })();
 
 /* ===== 3 · HUM SLIDE ===== */
 (() => {
-  const S = newScene(3), L = S.layer;
-  const wHum = WD(3, 'hum'), wM5 = WD(3, 'mmmmm'), wFeel = WD(3, 'feel'), wOpen = WD(3, 'open'), wM3 = WD(3, 'mmm'), wMah = WD(3, 'mahhh'), wKeep = WD(3, 'keep'), wThats = WD(3, "that's");
-  const ch = makeChar(L);
-  const O = ch.over;
-  const trail = el('path', { d: 'M 0,50 C 4,150 -4,260 0,330 C 4,400 0,450 0,500', fill: 'none', stroke: '#ffd43b', 'stroke-width': 8, 'stroke-linecap': 'round', pathLength: 1, 'stroke-dasharray': '1 1', 'stroke-dashoffset': 1, filter: 'url(#gl10)', opacity: .9 }, O);
-  const ripples = [...Array(4)].map(() => el('circle', { fill: 'none', stroke: '#ffe27a', 'stroke-width': 4, opacity: 0 }, O));
-  const orbG = el('g', null, O);
-  el('circle', { r: 90, fill: 'url(#gOrb)', opacity: .7, filter: 'url(#b12)' }, orbG);
-  el('circle', { r: 34, fill: 'url(#gOrb)' }, orbG);
-  el('circle', { r: 13, fill: '#fff' }, orbG);
-  const buzz = [...Array(6)].map(() => el('path', { fill: 'none', stroke: '#7febff', 'stroke-width': 4, 'stroke-linecap': 'round', opacity: 0, filter: 'url(#gl5)' }, O));
-  const scanLine = el('rect', { x: 0, width: 1080, height: 6, fill: '#9ff3ff', opacity: 0, filter: 'url(#gl10)' }, L);
-  function tag(txt, col) { const g = el('g', { opacity: 0 }, L); const r = el('rect', { height: 54, rx: 27, fill: '#06122b', stroke: col, 'stroke-width': 3 }, g); const tx = el('text', { x: 0, y: 38, 'font-size': 32, fill: col, 'letter-spacing': 3 }, g); tx.textContent = txt; const w = tx.getComputedTextLength(); set(r, { x: -22, width: w + 44 }); const ln = el('path', { fill: 'none', stroke: col, 'stroke-width': 3, opacity: .9 }, L); return { g, ln, w }; }
-  const tNose = tag('BUZZ · NOSE', '#7febff'), tChest = tag('LOW · CHEST', '#ffd43b');
+  const S = newScene(3), L = S.layer; S.uses3D = true;
+  const wHum = WD(3, 'hum'), wFeel = WD(3, 'feel'), wM3 = WD(3, 'mmm'), wMah = WD(3, 'mahhh'), wKeep = WD(3, 'keep'), wThats = WD(3, "that's");
+  const ripN = makeRipples(L, 4, '#FFD43B'), ripC = makeRipples(L, 4, '#ff9f43');
+  const labN = makeLabel(L, 'BUZZ HERE: NOSE + FACE', '#FFD43B');
+  const labC = makeLabel(L, 'KEEP IT LOW: CHEST', '#ff9f43');
+  const pip = makePiP(L);
+  makeCredit(S.ui);
   S.title = makeTitle(S.ui, { pill: 'DRILL 2', lines: ['MMM → MAHHH'] });
+  const NOSE = [0, 9.4, 6.2], CHEST = [0, -14, 3], UN = .86;
   S.update = (lt, t, fr, st) => {
     updTitle(S.title, lt);
+    const D = S.clip.dur;
+    const nose = win(lt, wHum.t0 - .1, .25, wMah.t0 + .15, .35);
+    const fall = eIO(inv(wMah.t0 - .05, wMah.t0 + .55, lt)), chest = eOut(inv(wMah.t0 + .35, wMah.t0 + .7, lt));
+    const all = eIO(inv(wThats.t0 - .1, wThats.t0 + .45, lt));
+    const orbU = lerp(UN, 0, fall), orbP = ANAT.pathPoint('nose', orbU);
+    const ang = lerp(1.36, 1.24, eIO(lt / D)), dist = lerp(124, 114, eIO(lt / D));
+    const A = ANAT.render({ frame: fr, t: lt, fov: 30, cam: [Math.sin(ang) * dist, 2, Math.cos(ang) * dist], target: [0, -3, 2.5],
+      parts: { softpal: { emissive: 0xffd43b, ei: .5 * nose }, lungs: { emissive: 0xff7a30, ei: .5 * chest, opacity: .5 + .25 * chest } },
+      flow: [{ path: 'nose', tail: all > 0 ? lerp(orbU, 0, all) : orbU, head: UN, a: fall > 0 ? .9 : 0, c1: 0xff9f43, c2: 0xffd43b, dir: -1 }],
+      glows: [{ p: NOSE, r: 10 + 2.5 * Math.sin(lt * 26), a: .85 * Math.max(nose, .5 * all), c: 0xffd43b }, { p: orbP, r: 9, a: fall > 0 && fall < 1 ? .95 : 0, c: 0xfff1b0 }, { p: CHEST, r: 24, a: .7 * chest * (.8 + .2 * Math.sin(lt * 9)), c: 0xff9f43 }],
+      anchors: { nose: NOSE, chest: CHEST } });
+    updRipples(ripN, A.nose[0], A.nose[1], lt, nose, 24, 150, .38);
+    updRipples(ripC, A.chest[0], A.chest[1], lt, chest, 40, 230, .55);
+    placeLabel(labN, 40, 860, A.nose[0], A.nose[1], win(lt, wFeel.t0 - .05, .22, wMah.t0 + .3, .3), lt);
+    placeLabel(labC, 560, 1180, A.chest[0], A.chest[1], eOut(inv(wKeep.t0 - .1, wKeep.t0 + .15, lt)), lt);
     const s = baseState(lt, 3);
-    s.sc = lerp(1, 1.04, eIO(lt / S.clip.dur)); s.x = 540; s.y = 830;
     const closeE = eIO(inv(.85, 1.15, lt)) * (1 - eIO(inv(wThats.t0 - .2, wThats.t0 + .1, lt)));
     s.eye = .72 * (1 - closeE); s.blink = closeE < .05;
     const hum = win(lt, wHum.t0 - .05, .15, wFeel.t0 + .9, .2) + win(lt, wM3.t0 - .05, .08, wMah.t0, .06);
     const mah = win(lt, wMah.t0, .1, wMah.t1 + .05, .45);
     s.mouth = { open: lerp(0, 1.02, mah) + .22 * win(lt, wMah.t1, .3, wThats.t0 - .3, .4), wide: 1 - .1 * hum + .08 * mah, smile: lerp(.3, .05, mah) + .3 * inv(wThats.t0, wThats.t0 + .3, lt), pucker: .12 * hum };
     s.browL.r = s.browR.r = .2 * closeE + .35 * mah;
-    s.hy += 6 * mah; s.hr += noise(lt * 40) * 1.2 * hum;
-    // x-ray
-    const xon = inv(1.0, 1.08, lt) * (1 - eIO(inv(wThats.t0 - .1, wThats.t0 + .35, lt)));
-    s.xray = xon; s.scan = eIO(inv(1.0, 1.55, lt));
-    updChar(ch, s, fr);
-    const sy = 830 + (-420 + 1900 * s.scan) * s.sc;
-    set(scanLine, { y: r1(sy - 3), opacity: r3(lt > 1 && lt < 1.6 ? .9 : 0) });
-    // orb path (local)
-    const fall = eIO(inv(wMah.t0 - .05, wMah.t0 + .5, lt)), dip = .15 * eOut(inv(wM3.t0, wMah.t0, lt));
-    const oy = lerp(52, 500, Math.max(fall, dip * .2)) + noise(lt * 50) * 2.5 * (1 - fall);
-    const ox = noise(lt * 47 + 2) * 2.5 * (1 - fall);
-    const oOp = eOut(inv(1.25, 1.55, lt)) * xon;
-    const oSc = lerp(.55, 1.15, fall) * (1 + .12 * Math.sin(lt * 28) * (hum > .3 ? 1 : .3));
-    set(orbG, { transform: `translate(${r1(ox)},${r1(oy)}) scale(${r3(oSc)})`, opacity: r3(oOp) });
-    ripples.forEach((rp, i) => { const per = .32, age = ((lt + i * per / 4 * 4 / 4 * 1) % per) / per; const R = (30 + age * 120) * lerp(.7, 1.3, fall); set(rp, { cx: r1(ox), cy: r1(oy), r: r1(R), opacity: r3(oOp * (1 - age) * .8), 'stroke-width': r1(5 * (1 - age) + 1) }); });
-    set(trail, { 'stroke-dashoffset': r3(1 - fall), opacity: r3(.9 * xon) });
-    buzz.forEach((b, i) => {
-      const side = i % 2 ? 1 : -1, k = Math.floor(i / 2), a = hum * xon;
-      const R = 70 + k * 26 + ((lt * 90) % 26);
-      set(b, { d: `M ${side * R},${r1(30 - R * .35)} Q ${side * (R + 12)},40 ${side * R},${r1(50 + R * .35)}`, opacity: r3(a * .8 * (1 - k * .25)) });
-    });
-    // tags
-    const nosePos = [540 + 0 * s.sc, 830 + 52 * s.sc], chestPos = [540, 830 + 500 * s.sc];
-    const n1 = win(lt, wFeel.t0 - .05, .22, wMah.t0, .25) * xon, n2 = win(lt, wKeep.t0 - .1, .22) * xon;
-    set(tNose.g, { opacity: r3(n1), transform: `translate(${r1(700)},${r1(nosePos[1] - 120)}) scale(${r3(.9 + .1 * n1)})` });
-    set(tNose.ln, { d: `M 690,${r1(nosePos[1] - 93)} L ${r1(nosePos[0] + 50)},${r1(nosePos[1] - 10)}`, opacity: r3(n1 * .8) });
-    set(tChest.g, { opacity: r3(n2), transform: `translate(${r1(700)},${r1(chestPos[1] - 190)}) scale(${r3(.9 + .1 * n2)})` });
-    set(tChest.ln, { d: `M 690,${r1(chestPos[1] - 163)} L ${r1(chestPos[0] + 60)},${r1(chestPos[1] - 40)}`, opacity: r3(n2 * .8) });
-    st.tintColor = '#2a7cff'; st.tint = .55 * xon;
-    st.shake = 5 * bump(lt, wMah.t0, .05, .3);
+    updPiP(pip, s, fr, eOut(inv(.1, .4, lt)));
+    st.tintColor = '#ffb020'; st.tint = .22 * Math.max(nose, chest);
+    st.shake = 4 * bump(lt, wMah.t0, .05, .3);
   };
 })();
 
 /* ===== 4 · HOME BASE PITCH ===== */
 (() => {
-  const S = newScene(4), L = S.layer;
-  const wUh = WD(4, 'uh-huh'), wHuh = WD(4, 'huh'), wLands = WD(4, 'lands'), wNat = WD(4, 'natural'), wSpeak = WD(4, 'speak'), wNever = WD(4, 'never'), wDeep = WD(4, 'deep');
-  const MX = 860, MT = 660, MB = 1300, HOME = MT + (MB - MT) * .6;
-  const ch = makeChar(L);
+  const S = newScene(4), L = S.layer; S.uses3D = true;
+  const wUh = WD(4, 'uh-huh'), wLands = WD(4, 'lands'), wNat = WD(4, 'natural'), wSpeak = WD(4, 'speak'), wNever = WD(4, 'never'), wDeep = WD(4, 'deep');
+  const MX = 930, MT = 700, MB = 1300, HOME = MT + (MB - MT) * .6;
   const m = el('g', null, L);
-  el('rect', { x: MX - 46, y: MT - 8, width: 92, height: MB - MT + 16, rx: 46, fill: '#0d1018', stroke: '#2c3346', 'stroke-width': 3 }, m);
-  el('rect', { x: MX - 30, y: MT + 8, width: 60, height: MB - MT - 16, rx: 30, fill: 'url(#gMeter)', opacity: .85 }, m);
-  el('rect', { x: MX - 30, y: MT + 8, width: 60, height: MB - MT - 16, rx: 30, fill: '#000', opacity: .25 }, m);
-  for (let y = MT + 30; y < MB - 20; y += 32) el('line', { x1: MX - 70, x2: MX - 56, y1: y, y2: y, stroke: '#8b93a8', 'stroke-width': 3, opacity: .55 }, m);
-  const hi = el('text', { x: MX, y: MT - 28, 'text-anchor': 'middle', 'font-size': 30, fill: '#c7cfe2', 'letter-spacing': 3 }, m); hi.textContent = 'HIGH';
-  const lo = el('text', { x: MX, y: MB + 52, 'text-anchor': 'middle', 'font-size': 30, fill: '#c7cfe2', 'letter-spacing': 3 }, m); lo.textContent = 'LOW';
+  el('rect', { x: MX - 40, y: MT - 8, width: 80, height: MB - MT + 16, rx: 40, fill: '#0d1018', stroke: '#2c3346', 'stroke-width': 3, opacity: .92 }, m);
+  el('rect', { x: MX - 26, y: MT + 8, width: 52, height: MB - MT - 16, rx: 26, fill: 'url(#gMeter)', opacity: .85 }, m);
+  el('rect', { x: MX - 26, y: MT + 8, width: 52, height: MB - MT - 16, rx: 26, fill: '#000', opacity: .25 }, m);
+  const hi = el('text', { x: MX, y: MT - 26, 'text-anchor': 'middle', 'font-size': 28, fill: '#c7cfe2', 'letter-spacing': 3 }, m); hi.textContent = 'HIGH';
+  const lo = el('text', { x: MX, y: MB + 48, 'text-anchor': 'middle', 'font-size': 28, fill: '#c7cfe2', 'letter-spacing': 3 }, m); lo.textContent = 'LOW';
   const danger = el('g', { opacity: 0 }, m);
-  el('rect', { x: MX - 30, y: MB - 130, width: 60, height: 122, rx: 26, fill: '#ff3b4d', opacity: .75 }, danger);
-  for (let k = 0; k < 6; k++) el('line', { x1: MX - 30, x2: MX + 30, y1: MB - 120 + k * 22, y2: MB - 140 + k * 22, stroke: '#fff', 'stroke-width': 5, opacity: .35 }, danger);
-  const dLab = el('g', { opacity: 0 }, L);
-  el('rect', { x: -330, y: -30, width: 330, height: 60, rx: 30, fill: '#ff3b4d' }, dLab);
-  const dTx = el('text', { x: -165, y: 12, 'text-anchor': 'middle', 'font-size': 32, fill: '#fff', 'letter-spacing': 2 }, dLab); dTx.textContent = '✕ FORCED DEEP';
-  const homeBand = el('rect', { x: MX - 58, y: HOME - 34, width: 116, height: 68, rx: 20, fill: 'none', stroke: '#FFD43B', 'stroke-width': 5, opacity: 0, filter: 'url(#gl5)' }, L);
+  el('rect', { x: MX - 26, y: MB - 120, width: 52, height: 112, rx: 22, fill: '#ff3b4d', opacity: .75 }, danger);
+  const homeBand = el('rect', { x: MX - 52, y: HOME - 32, width: 104, height: 64, rx: 20, fill: 'none', stroke: '#FFD43B', 'stroke-width': 5, opacity: 0, filter: 'url(#gl5)' }, L);
   const ring = el('circle', { cx: MX, cy: HOME, fill: 'none', stroke: '#FFD43B', 'stroke-width': 5, opacity: 0 }, L);
-  const hLab = el('g', { opacity: 0 }, L);
-  const hR = el('rect', { y: -30, height: 60, rx: 30, fill: '#FFD43B' }, hLab);
-  const hTx = el('text', { y: 11, 'text-anchor': 'middle', 'font-size': 31, fill: '#0b0b0e', 'letter-spacing': 2 }, hLab); hTx.textContent = 'HOME BASE';
-  { const w = hTx.getComputedTextLength() + 48; set(hR, { x: r1(-w), width: r1(w) }); set(hTx, { x: r1(-w / 2) }); }
-  const lock = el('g', { opacity: 0 }, L);
-  el('rect', { x: -16, y: -4, width: 32, height: 26, rx: 5, fill: '#0b0b0e' }, lock);
-  el('path', { d: 'M -10,-4 L -10,-12 A 10,10 0 0 1 10,-12 L 10,-4', fill: 'none', stroke: '#0b0b0e', 'stroke-width': 5 }, lock);
-  const note = el('g', { opacity: 0 }, L);
-  const noteInner = el('g', { filter: 'url(#gl10)' }, note);
-  el('ellipse', { cx: 0, cy: 0, rx: 25, ry: 18, transform: 'rotate(-22)', fill: '#FFD43B' }, noteInner);
-  el('rect', { x: 17, y: -86, width: 8, height: 86, fill: '#FFD43B' }, noteInner);
-  el('path', { d: 'M 25,-86 C 40,-70 58,-62 52,-34 C 48,-48 38,-56 25,-58 Z', fill: '#FFD43B' }, noteInner);
-  const trailN = el('path', { fill: 'none', stroke: '#FFD43B', 'stroke-width': 5, 'stroke-dasharray': '2 14', 'stroke-linecap': 'round', opacity: 0 }, L);
+  const note = el('g', { opacity: 0 }, L), noteIn = el('g', { filter: 'url(#gl10)' }, note);
+  el('ellipse', { cx: 0, cy: 0, rx: 22, ry: 16, transform: 'rotate(-22)', fill: '#FFD43B' }, noteIn);
+  el('rect', { x: 15, y: -76, width: 7, height: 76, fill: '#FFD43B' }, noteIn);
+  el('path', { d: 'M 22,-76 C 36,-62 52,-55 46,-30 C 42,-43 34,-50 22,-52 Z', fill: '#FFD43B' }, noteIn);
+  const labBox = makeLabel(L, 'VOICE BOX (LARYNX)', '#c9e2ea');
+  const labCord = makeLabel(L, 'VOCAL CORDS', '#FFD43B');
+  const labHome = makeLabel(L, 'HOME BASE', '#FFD43B');
+  const labNo = makeLabel(L, "✕ DON'T SHOVE IT DOWN", '#ff3b4d', '#fff');
+  const pip = makePiP(L);
+  makeCredit(S.ui);
   S.title = makeTitle(S.ui, { pill: 'DRILL 3', lines: ['FIND HOME BASE'] });
   S.update = (lt, t, fr, st) => {
     updTitle(S.title, lt);
-    const s = baseState(lt, 4);
-    s.sc = .86; s.x = 330; s.y = 930;
-    s.mouth.open = talkOpen(fr, .9); s.mouth.wide = 1 - .15 * s.mouth.open + .06 * noise(fr * .37); s.mouth.smile = .4;
-    const n1 = bump(lt, wUh.t0 - .02, .1, .14), n2 = bump(lt, wUh.t0 + .22, .1, .16);
-    s.hy += 16 * (n1 + n2); s.fy = 7 * (n1 + n2); s.hr += 2 * (n1 + n2);
-    s.squint = .22; s.browL.r = s.browR.r = .2;
-    const shake = win(lt, wNever.t0, .1, wDeep.t1 + .1, .2);
-    s.hr += Math.sin((lt - wNever.t0) * 20) * 5 * shake; s.fx = Math.sin((lt - wNever.t0) * 20) * 9 * shake;
-    s.browL.t = s.browR.t = .5 * shake;
-    s.lx = 9 * eOut(inv(1.6, 1.9, lt)) * (1 - shake); s.ly = -2;
-    updChar(ch, s, fr);
-    // note flight: mouth -> top of meter -> slide to home
-    const mouth = [330 + s.hx * .86, 930 + (128 + s.hy) * .86];
-    const T_EM = wUh.t0 + .18, T_TOP = T_EM + .75, T_HOME = wLands.t0 + .12;
+    const D = S.clip.dur;
+    const vib = win(lt, wUh.t0 - .02, .06, wUh.t1 + .05, .15) + .7 * win(lt, wSpeak.t0, .1, wNever.t0 - .1, .15) + .5 * win(lt, wLands.t0, .1, wNat.t1, .2);
+    const drop = bump(lt, wDeep.t0 - .1, .25, .6), bad = win(lt, wNever.t0, .15, wDeep.t1 + .35, .3);
+    const ang = lerp(.72, .44, eIO(lt / D)), dist = lerp(31, 27, eIO(lt / D));
+    const red = { emissive: 0xff2030, ei: .55 * bad };
+    const A = ANAT.render({ frame: fr, t: lt, fov: 32, cam: [Math.sin(ang) * dist, 6, Math.cos(ang) * dist], target: [-.2, .2, .5],
+      vibrate: clamp(vib), larynxDrop: 1.4 * drop, hide: ['skull', 'teeth', 'ribs', 'lungs', 'diaphragm', 'softpal', 'tongue', 'esophagus', 'pharynx'],
+      parts: { thyroid: { opacity: .4, emissive: bad > .01 ? 0xff2030 : 0, ei: .35 * bad }, cricoid: red, epiglottis: red,
+        vligL: { emissive: 0xffd43b, ei: 1.6 * clamp(vib) }, vligR: { emissive: 0xffd43b, ei: 1.6 * clamp(vib) }, vocalis: { emissive: 0xff8a30, ei: .4 * clamp(vib) } },
+      glows: [{ p: [0, .45 - 1.4 * drop, .9], r: 3.2, a: .75 * clamp(vib), c: 0xffd43b }],
+      anchors: { lxBox: [0, 2.4, 2.1], lxCord: [0, .45, .9] } });
+    placeLabel(labBox, 60, 580, A.lxBox[0], A.lxBox[1], win(lt, .25, .25, wSpeak.t0, .3), lt);
+    placeLabel(labCord, 60, 960, A.lxCord[0], A.lxCord[1], win(lt, wUh.t0 - .1, .2, wNever.t0, .2), lt);
+    placeLabel(labNo, 60, 960, A.lxCord[0], A.lxCord[1], bad, lt);
+    // note: from the cords to the meter
+    const T_EM = wUh.t0 + .18, T_TOP = T_EM + .75, T_HOME = wLands.t0 + .12, src = A.lxCord;
     let nx = MX, ny = HOME, nsc = 1, nop = 0;
     if (lt >= T_EM) {
       nop = 1;
-      if (lt < T_TOP) { const u = eIO(inv(T_EM, T_TOP, lt)); const cx = 620, cy = 560; nx = (1 - u) * (1 - u) * mouth[0] + 2 * u * (1 - u) * cx + u * u * MX; ny = (1 - u) * (1 - u) * mouth[1] + 2 * u * (1 - u) * cy + u * u * (MT + 60); nsc = .6 + .4 * u; }
-      else if (lt < T_HOME) { const u = inv(T_TOP, T_HOME, lt); const yy = lerp(MT + 60, HOME, eIO(u)) + Math.sin(u * 14) * 38 * (1 - u); nx = MX; ny = yy; }
-      else { const u = inv(T_HOME, T_HOME + .5, lt); ny = HOME - 26 * (1 - elastic(u)) * (u < 1 ? 1 : 0); }
-      // speaking jiggle + forced dip
-      const talkJ = win(lt, wSpeak.t0, .15, wNever.t0 - .1, .2) * (envAt(fr) - .3) * 40;
-      const dip = bump(lt, wDeep.t0 - .05, .2, .5) * (MB - 70 - HOME);
-      ny += talkJ + dip;
+      if (lt < T_TOP) { const u = eIO(inv(T_EM, T_TOP, lt)), cx = 760, cy = 620; nx = (1 - u) * (1 - u) * src[0] + 2 * u * (1 - u) * cx + u * u * MX; ny = (1 - u) * (1 - u) * src[1] + 2 * u * (1 - u) * cy + u * u * (MT + 60); nsc = .6 + .4 * u; }
+      else if (lt < T_HOME) { const u = inv(T_TOP, T_HOME, lt); ny = lerp(MT + 60, HOME, eIO(u)) + Math.sin(u * 14) * 34 * (1 - u); }
+      else { const u = inv(T_HOME, T_HOME + .5, lt); ny = HOME - 24 * (1 - elastic(u)) * (u < 1 ? 1 : 0); }
+      ny += win(lt, wSpeak.t0, .15, wNever.t0 - .1, .2) * (envAt(fr) - .3) * 36 + drop * (MB - 64 - HOME);
     }
     set(note, { opacity: r3(nop), transform: `translate(${r1(nx)},${r1(ny)}) scale(${r3(nsc * (1 + .08 * Math.sin(lt * 9)))})` });
-    if (lt >= T_EM && lt < T_TOP + .1) { const pts = []; for (let k = 0; k <= 20; k++) { const u = k / 20 * eIO(inv(T_EM, T_TOP, lt)); pts.push(`${r1((1 - u) * (1 - u) * mouth[0] + 2 * u * (1 - u) * 620 + u * u * MX)},${r1((1 - u) * (1 - u) * mouth[1] + 2 * u * (1 - u) * 560 + u * u * (MT + 60))}`); } set(trailN, { d: 'M ' + pts.join(' L '), opacity: .6 }); }
-    else set(trailN, { opacity: r3(.6 * (1 - inv(T_TOP + .1, T_TOP + .4, lt))) });
     const lk = eOut(inv(wNat.t0 - .05, wNat.t0 + .2, lt));
     set(homeBand, { opacity: r3(lk), transform: `translate(${MX},${HOME}) scale(${r3(lerp(1.5, 1, back(inv(wNat.t0 - .05, wNat.t0 + .25, lt))))}) translate(${-MX},${-HOME})` });
-    const ra = inv(wNat.t0, wNat.t0 + .6, lt); set(ring, { r: r1(40 + ra * 150), opacity: r3(lt > wNat.t0 ? (1 - ra) * .8 : 0) });
-    set(hLab, { opacity: r3(lk), transform: `translate(${MX - 74},${HOME}) scale(${r3(back(inv(wNat.t0, wNat.t0 + .3, lt)))})` });
-    set(lock, { opacity: r3(lk), transform: `translate(${MX - 74 - 300 - 4},${HOME}) scale(0)` });
-    const dz = win(lt, wNever.t0 - .05, .15);
-    set(danger, { opacity: r3(dz * (.7 + .3 * Math.sin(lt * 18))) });
-    set(dLab, { opacity: r3(dz), transform: `translate(${MX - 74},${MB - 70}) scale(${r3(back(inv(wNever.t0 - .05, wNever.t0 + .25, lt)))})` });
-    st.tintColor = '#7b4dff'; st.tint = .28;
+    const ra = inv(wNat.t0, wNat.t0 + .6, lt); set(ring, { r: r1(40 + ra * 140), opacity: r3(lt > wNat.t0 ? (1 - ra) * .8 : 0) });
+    placeLabel(labHome, MX - 70, HOME - 29, MX - 52, HOME, lk * (1 - bad), lt, 'right');
+    set(danger, { opacity: r3(bad * (.7 + .3 * Math.sin(lt * 18))) });
+    const s = baseState(lt, 4);
+    s.mouth.open = talkOpen(fr, .9); s.mouth.wide = 1 - .15 * s.mouth.open + .06 * noise(fr * .37); s.mouth.smile = .4;
+    const n1 = bump(lt, wUh.t0 - .02, .1, .14), n2 = bump(lt, wUh.t0 + .22, .1, .16);
+    s.hy += 16 * (n1 + n2); s.fy = 7 * (n1 + n2); s.hr += 2 * (n1 + n2); s.squint = .22; s.browL.r = s.browR.r = .2;
+    const shk = win(lt, wNever.t0, .1, wDeep.t1 + .1, .2);
+    s.hr += Math.sin((lt - wNever.t0) * 20) * 5 * shk; s.fx = Math.sin((lt - wNever.t0) * 20) * 9 * shk; s.browL.t = s.browR.t = .5 * shk;
+    updPiP(pip, s, fr, eOut(inv(.1, .4, lt)));
+    st.tintColor = bad > .3 ? '#ff3b4d' : '#7b4dff'; st.tint = .22 + .15 * bad;
   };
 })();
 
@@ -1088,6 +1034,7 @@ function renderFrame(fr) {
   const clip = TL.clips[ci], lt = t - clip.start, S = SCENES[ci];
   if (ci !== lastScene) { SCENES.forEach((s, i) => { set(s.layer, { display: i === ci ? 'inline' : 'none' }); set(s.ui, { display: i === ci ? 'inline' : 'none' }); }); lastScene = ci; }
   const st = { shake: 0, flash: 0, tint: 0, tintColor: '#3d5a8a', zoom: 1, dim: 0 };
+  if (!S.uses3D && window.ANAT) ANAT.clear();
   S.update(lt, t, fr, st);
   const z = (ci > 0 ? 1 + .05 * (1 - eOut(lt / .3)) : 1) * st.zoom;
   const sx = st.shake ? noise(t * 38) * st.shake : 0, sy = st.shake ? noise(t * 38 + 50) * st.shake : 0;
@@ -1100,4 +1047,5 @@ function renderFrame(fr) {
   updCaptions(t, (S.capHide && S.capHide(lt)) || window.NO_CAPS);
 }
 window.renderFrame = renderFrame;
-window.READY = true;
+window.ANIM_READY = true;
+if (window.ANAT_READY) window.READY = true;
