@@ -55,7 +55,7 @@ export function woodCanvas() {
   return c;
 }
 
-function paintCourt(g) {
+function paintCourt(g, baseline = 'R E A D   T H E   D E F E N S E') {
   const C = COURT;
   const line = 0.0508 * PX;
   // out-of-bounds apron: dark navy stain
@@ -108,7 +108,7 @@ function paintCourt(g) {
   arc(0, C.halfZ, 1.83, Math.PI, 2 * Math.PI, null);
   // baseline text band
   g.save(); g.fillStyle = 'rgba(255,255,255,0.85)'; g.font = `800 ${0.45 * PX}px BC, Arial`; g.textAlign = 'center';
-  const t = toPx(0, C.baselineZ - 0.75); g.translate(t[0], t[1]); g.fillText('R E A D   T H E   D E F E N S E', 0, 0.16 * PX); g.restore();
+  const t = toPx(0, C.baselineZ - 0.75); g.translate(t[0], t[1]); g.fillText(baseline, 0, 0.16 * PX); g.restore();
 }
 
 export function floorMaterial(tex, reflector, o = {}) {
@@ -151,7 +151,7 @@ export function makeTextTexture(w, h, draw) {
   return t;
 }
 
-function buildHoop(scene) {
+function buildHoop(scene, baseText = 'TEST  ·  READ') {
   const C = COURT;
   const g = new THREE.Group();
   const orange = new THREE.MeshStandardMaterial({ color: 0xe5531b, roughness: 0.35, metalness: 0.6 });
@@ -187,7 +187,7 @@ function buildHoop(scene) {
   // LED strip on stanchion base
   const baseLed = makeTextTexture(1024, 256, (x, w, h) => {
     const gr = x.createLinearGradient(0, 0, w, 0); gr.addColorStop(0, '#0a1a4a'); gr.addColorStop(1, '#1b3fa0'); x.fillStyle = gr; x.fillRect(0, 0, w, h);
-    x.fillStyle = '#fff'; x.font = '800 130px BC, Arial'; x.textAlign = 'center'; x.fillText('TEST  ·  READ', w / 2, 170);
+    x.fillStyle = '#fff'; x.font = '800 130px BC, Arial'; x.textAlign = 'center'; x.fillText(baseText, w / 2, 170);
   });
   const baseFront = new THREE.Mesh(new THREE.PlaneGeometry(1.46, 0.36), new THREE.MeshBasicMaterial({ map: baseLed, toneMapped: false }));
   baseFront.position.set(0, 0.55, C.boardZ - 3.45 + 1.151); g.add(baseFront);
@@ -340,7 +340,7 @@ export function buildArena(renderer, scene, opts = {}) {
   scene.fog = new THREE.Fog(0x07080b, 20, 42);
   // floor
   const wc = woodCanvas();
-  paintCourt(wc.getContext('2d'));
+  paintCourt(wc.getContext('2d'), opts.baselineText); // (opts.baselineText: the words painted behind the baseline)
   const tex = new THREE.CanvasTexture(wc);
   tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
   tex.generateMipmaps = true; tex.minFilter = THREE.LinearMipmapLinearFilter;
@@ -358,7 +358,7 @@ export function buildArena(renderer, scene, opts = {}) {
   // dark surround floor beyond canvas
   const outer = new THREE.Mesh(new THREE.PlaneGeometry(80, 80), new THREE.MeshStandardMaterial({ color: 0x14171d, roughness: 0.8 }));
   outer.rotation.x = -Math.PI / 2; outer.position.y = -0.005; scene.add(outer);
-  buildHoop(scene);
+  buildHoop(scene, opts.baseText); // (opts.baseText: the words on the stanchion's base)
   const net = new Net(scene);
   if (!new URLSearchParams(location.search).has('nocrowd')) buildCrowd(scene);
   buildLedBoards(scene, opts.ledWords);

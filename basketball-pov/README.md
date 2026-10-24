@@ -3,7 +3,8 @@
 2K-style gameplay clips and breakdowns, rendered from three.js and driven by real motion capture.
 
 - **Compilation:** every basketball video below, v1 to v11, back to back in one portrait clip. [`out/compilation.mp4`](out/compilation.mp4) (6:37, 720×1280, 30 fps, H.264 + AAC; the landscape v1-v3 sit over a blurred fill)
-- **v14 (latest): "Under the El".** A brand-new street-ball clip in the style of the user's own (a skeleton cooking people at a park court with a crowd round it, shot on a phone), but a different court, different people and different plays: a city court on a sunny afternoon beside an elevated subway line (a train goes by), the skeleton against a man in a royal-blue tank and a man in a gold tee, three possessions of real handles into real finishes, filmed from behind his shoulder, with no talking on the soundtrack. [`out/under_the_el.mp4`](out/under_the_el.mp4) (1080×1920 portrait, 30 fps, H.264 + AAC)
+- **v15 (latest): "Snatch Crossover".** An 8-second cinematic clip: a glowing X-ray skeleton with faint blue muscle, alone on an arena floor at night with the crowd in the dark beyond. Right-hand pound dribbles, the snatch back left in a low crossover, a dead stop on a 1-2, straight up with no drift, the jumper at the top of the jump, a high arc and a swish. One take that swings round behind him as he rises, easing into slow motion for the shot. [`out/snatch_crossover_skeleton.mp4`](out/snatch_crossover_skeleton.mp4) (720×1280 portrait, 30 fps, H.264 + AAC)
+- v14: "Under the El". A brand-new street-ball clip in the style of the user's own (a skeleton cooking people at a park court with a crowd round it, shot on a phone), but a different court, different people and different plays: a city court on a sunny afternoon beside an elevated subway line (a train goes by), the skeleton against a man in a royal-blue tank and a man in a gold tee, three possessions of real handles into real finishes, filmed from behind his shoulder, with no talking on the soundtrack. [`out/under_the_el.mp4`](out/under_the_el.mp4) (1080×1920 portrait, 30 fps, H.264 + AAC)
 - v13: "Game Speed". Four new plays at full speed, each one take from the first dribble to the net, no freezes and no slow motion: a crossover drive into a layup off the glass, a spin move into a pull-up, through the legs into a step-back three, and a double crossover into a pull-up. [`out/game_speed.mp4`](out/game_speed.mp4) (1080×1920 portrait, 30 fps, H.264 + AAC)
 - v12: "Read the Room". Not basketball: a split screen, what he does on top and what his brain does underneath at the same moment, as one guy walks up to three people mid-conversation, checked out and then locked in, and why the locked-in one develops faster. [`out/read_the_room.mp4`](out/read_the_room.mp4) (1080×1920 portrait, 30 fps, H.264 + AAC)
 - v11: film room, "Behind the Curtain". A sharp player learns a new move (between the legs, cross, cross back, step-back) at rep 1, rep 3 and rep 6, then makes it his own live. Every rep plays as it looks in the gym, then the picture splits like a curtain onto what he's running behind it: his eyes, the steps fusing into chunks, his man's weight, his options. [`out/behind_the_curtain.mp4`](out/behind_the_curtain.mp4) (1080×1920 portrait, 30 fps, H.264 + AAC)
@@ -32,6 +33,18 @@ It writes three files:
 - `clip_overlay.mp4`: the footage with the tracked skeleton drawn on it.
 - `clip_pose.mp4`: the skeleton alone on black, the pose-reference format that AI video tools take.
 - `clip.json`: per-frame 2D image landmarks with visibility, plus 3D world landmarks in metres around the hips.
+
+## How v15 is made
+
+- **Motion:** 06_13's walk-up dribbles (right-hand pounds, crossovers at 0.8 and 1.6, the snatch back left at 3.5)
+  cut where the poses match into 124_05's 1-2, dip and jump shot; the jump's sideways drift cut to a tenth, so he goes
+  straight up and comes straight down.
+- **Look:** the v5 rep engine's ball and hands on the anatomical skeleton, its bones glowing white-blue (brighter at
+  their edges), the body's own skin drawn round them as a faint additive blue shell that only shows at its silhouette
+  and along the muscles' relief; the v2 arena darkened to one pool of light, with its reflective floor; bloom.
+- **Camera and time:** one take, three-quarter front through the dribbles, swinging round behind him and up as he
+  rises; the clip eases to 0.55x from just before takeoff to just after the swish (a speed ramp, no cut).
+- **Files:** `src/play15.js`, `src/timeline15.js`, `src/main15.js`, `src/index15.html`; sound from `tools/audio_gym.py`.
 
 ## v14: what it shows
 
@@ -463,6 +476,8 @@ A right-wing isolation with the clock running out and your team down two.
 npm install
 pip install pillow numpy scipy imageio-ffmpeg trimesh networkx mediapipe nibabel scikit-image
 npm run assets      # Rocketbox models + uniforms, CMU mocap clips, the v12 brain
+npm run preview:v15 # quick 360x640 check of v15
+npm run render:v15  # final 720x1280 v15 with audio -> out/snatch_crossover_skeleton.mp4
 npm run preview:v14 # quick 540x960 check of v14
 npm run render:v14  # final 1080x1920 v14 with audio -> out/under_the_el.mp4
 npm run preview:v13 # quick 540x960 check of v13
