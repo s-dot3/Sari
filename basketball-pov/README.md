@@ -3,7 +3,8 @@
 2K-style gameplay clips and breakdowns, rendered from three.js and driven by real motion capture.
 
 - **Compilation:** every basketball video below, v1 to v11, back to back in one portrait clip. [`out/compilation.mp4`](out/compilation.mp4) (6:37, 720×1280, 30 fps, H.264 + AAC; the landscape v1-v3 sit over a blurred fill)
-- **v15 (latest): "Snatch Crossover".** An 8-second cinematic clip: a glowing X-ray skeleton with faint blue muscle, alone on an arena floor at night with the crowd in the dark beyond. Right-hand pound dribbles, the snatch back left in a low crossover, a dead stop on a 1-2, straight up with no drift, the jumper at the top of the jump, a high arc and a swish. One take that swings round behind him as he rises, easing into slow motion for the shot. [`out/snatch_crossover_skeleton.mp4`](out/snatch_crossover_skeleton.mp4) (720×1280 portrait, 30 fps, H.264 + AAC)
+- **v16 (latest): film room, "No Open Looks".** Team defence, three on three in team kits: switching a ball screen, killing a pin-down for a shooter, taking away a backdoor cut, and a scram switch to fix a mismatch, every possession ending in a contested miss. Shot from the coaches' angle with the play drawn on the floor (who's got who, the switch, the cut), call-outs over the players, a shot clock, freezes and slow motion, then down behind the shooter for the shot. [`out/no_open_looks.mp4`](out/no_open_looks.mp4) (1080×1920 portrait, 30 fps, H.264 + AAC)
+- v15: "Snatch Crossover". An 8-second cinematic clip: a glowing X-ray skeleton with faint blue muscle, alone on an arena floor at night with the crowd in the dark beyond. Right-hand pound dribbles, the snatch back left in a low crossover, a dead stop on a 1-2, straight up with no drift, the jumper at the top of the jump, a high arc and a swish. One take that swings round behind him as he rises, easing into slow motion for the shot. [`out/snatch_crossover_skeleton.mp4`](out/snatch_crossover_skeleton.mp4) (720×1280 portrait, 30 fps, H.264 + AAC)
 - v14: "Under the El". A brand-new street-ball clip in the style of the user's own (a skeleton cooking people at a park court with a crowd round it, shot on a phone), but a different court, different people and different plays: a city court on a sunny afternoon beside an elevated subway line (a train goes by), the skeleton against a man in a royal-blue tank and a man in a gold tee, three possessions of real handles into real finishes, filmed from behind his shoulder, with no talking on the soundtrack. [`out/under_the_el.mp4`](out/under_the_el.mp4) (1080×1920 portrait, 30 fps, H.264 + AAC)
 - v13: "Game Speed". Four new plays at full speed, each one take from the first dribble to the net, no freezes and no slow motion: a crossover drive into a layup off the glass, a spin move into a pull-up, through the legs into a step-back three, and a double crossover into a pull-up. [`out/game_speed.mp4`](out/game_speed.mp4) (1080×1920 portrait, 30 fps, H.264 + AAC)
 - v12: "Read the Room". Not basketball: a split screen, what he does on top and what his brain does underneath at the same moment, as one guy walks up to three people mid-conversation, checked out and then locked in, and why the locked-in one develops faster. [`out/read_the_room.mp4`](out/read_the_room.mp4) (1080×1920 portrait, 30 fps, H.264 + AAC)
@@ -33,6 +34,27 @@ It writes three files:
 - `clip_overlay.mp4`: the footage with the tracked skeleton drawn on it.
 - `clip_pose.mp4`: the skeleton alone on black, the pose-reference format that AI video tools take.
 - `clip.json`: per-frame 2D image landmarks with visibility, plus 3D world landmarks in metres around the hips.
+
+## v16: what it shows
+
+Three on three: the offence in white, the defence in red. Each possession plays live from the coaches' angle (high up behind the play), freezes while the defence's answer is drawn on the floor, plays that answer in slow motion, then cuts down behind the shooter for the shot and the miss.
+
+1. **Switch it.** A high ball screen. The screener's man is up at the level, not back in the paint, so on "switch!" he's already in the drive's way. He walls the ball handler up, and the guard who got screened takes the roller and fronts him. Nothing at the rim, so it's a long two over length.
+2. **Kill the pin-down.** The big comes down to screen for a shooter on the block. His man goes down with him and jumps out on the high side as the shooter comes off, beating him to the spot. The catch is made with a hand in his face, the shooter's man takes the big, and the three becomes one dribble into a contested long two.
+3. **No backdoor.** The wing is denied, with a hand and a foot in the passing lane. He cuts backdoor, his man opens to the ball and runs with him the shorter way to the rim, and the help is there too. No pass, the play is dead, and late in the clock the ball handler has to go himself.
+4. **Scram the mismatch.** After a switch, a guard is stuck on the big in the post and a big is out on the ball. The weak-side defender sprints over and fronts the big before the entry pass, and only then does the guard run out to the wing. The big on the ball gives a cushion, keeps his chest in front, and the guard settles for a jumper over him.
+
+On the floor: a ring under every player (red the defence, white the offence), a gold line from each defender to the man he has (it pulls back and runs out to the new man on a switch, red while it's a mismatch), and arrows along the real paths about to be run. Call-outs ride over the players' heads ("SWITCH!", "JUMP IT!", "DENY", "SCRAM!"), and the shot clock runs down to the release.
+
+## How v16 is made
+
+- **Every player from real takes (CMU mocap).** The ball handlers dribble with 06_13 (cut where the poses match, `tools/transit.py`) into 78_32's drive or 124_05's pull-up; the shooters catch and shoot with 124_05. Off the ball: 78_24's and 78_25's runs for cuts, rolls and closeouts, 78_30's stance and slides, 78_28's retreat, 124_05's ready stance.
+- **Footwork planner (`src/moves16.js`).** Moving to a spot by a time uses a stretch of a take that covers exactly the distance, played at the rate that lands it on time and turned so its own direction of travel points there (a slide goes sideways, a closeout run about 40° off the chest). Defenders keeping to a moving spot (in front of the ball, between a cutter and the ball, fronting a post) use v14's planner: a reaction time after they're out of place, the move that best puts them where the spot will be. Every off-ball player's feet are locked to the floor where they plant.
+- **The ball.** A possession with a pass is two reps on one defender's track (v9): the passer's ball until it leaves his hands, then the shooter's from the catch, including a dribble after the catch.
+- **Checked before rendering.** `tools/plan16.mjs` builds every track without a browser and reports how close any two players come.
+- **Telestrator (`src/floor16.js`), cameras (`src/cam16.js`), HUD (`src/hud16.js`, `src/hud16.css`).** The film camera follows a weighted middle of the players who matter at that moment; the shot camera sits low behind the shooter's shoulder and rides the ball to the rim.
+- **Rendering.** `tools/render_chunks.mjs` renders the timeline in 10-second chunks and joins them, so a render that gets cut off picks up where it stopped.
+- **Files:** `src/play16.js`, `src/moves16.js`, `src/floor16.js`, `src/cam16.js`, `src/hud16.js`, `src/hud16.css`, `src/timeline16.js`, `src/main16.js`, `src/index16.html`, `tools/plan16.mjs`, `tools/render_chunks.mjs`; sound from `tools/audio_gym.py`.
 
 ## How v15 is made
 
@@ -476,6 +498,8 @@ A right-wing isolation with the clock running out and your team down two.
 npm install
 pip install pillow numpy scipy imageio-ffmpeg trimesh networkx mediapipe nibabel scikit-image
 npm run assets      # Rocketbox models + uniforms, CMU mocap clips, the v12 brain
+npm run preview:v16 # quick 540x960 check of v16
+npm run render:v16  # final 1080x1920 v16 with audio -> out/no_open_looks.mp4
 npm run preview:v15 # quick 360x640 check of v15
 npm run render:v15  # final 720x1280 v15 with audio -> out/snatch_crossover_skeleton.mp4
 npm run preview:v14 # quick 540x960 check of v14

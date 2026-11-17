@@ -34,8 +34,9 @@ export class Cam16 {
     const look = V(sx / sw + (C.lookOff?.x ?? 0), C.lookY ?? 0.6, sz / sw + (C.lookOff?.z ?? 0));
     // back off when the players who matter spread across the narrow frame
     const span = Math.max(...xs.map(p => p.x)) - Math.min(...xs.map(p => p.x));
-    const k = 1 + (C.spread ?? 0.08) * Math.max(0, span - (C.span0 ?? 3.0));
-    const off = V(C.off.x, C.off.y, C.off.z).multiplyScalar(k);
+    // (capped, and never up among the lamps: the extra height goes into distance)
+    const k = Math.min(1.4, 1 + (C.spread ?? 0.08) * Math.max(0, span - (C.span0 ?? 3.0)));
+    const off = V(C.off.x * k, Math.min(C.off.y * k, 6.6), C.off.z * k);
     // (in the shot it eases in toward a lower, closer angle on the shooter)
     return { pos: look.clone().add(off), look, fov: C.fov ?? 52 };
   }

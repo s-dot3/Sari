@@ -21,7 +21,7 @@ export const SEQ = [
   { rep: 'switch', cam: 'shot', freeze: '@miss', dur: 2.3, caption: 'Long two over length,<br>contested at {switch.sep} ft. <b>Miss.</b>' },
 
   { rep: 'pindown', cam: 'film', from: 0.0, to: '@switch', rate: 0.8, caption: 'Pin-down for the shooter.<br><b>The screener\'s man goes down with him.</b>' },
-  { rep: 'pindown', cam: 'film', freeze: '@switch', dur: 3.5, caption: 'Switch it on the high side:<br><b>beat him to the spot.</b> Shooter\'s man takes the big.' },
+  { rep: 'pindown', cam: 'film', freeze: '@switch', dur: 3.5, caption: 'Switch it high: <b>beat him to the spot.</b><br>Shooter\'s man takes the big.' },
   { rep: 'pindown', cam: 'film', from: '@switch', to: '@catch', rate: 0.6, caption: 'He comes off it <b>looking for a three...</b>' },
   { rep: 'pindown', cam: 'film', freeze: '@catch', dur: 1.9, caption: '...and catches it with <b>a hand in his face.</b><br>No three.' },
   { rep: 'pindown', cam: 'film', from: '@catch', to: '@pre', rate: 0.7, caption: 'Run him off the line. <b>He has to put it down.</b>' },

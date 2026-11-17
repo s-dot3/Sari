@@ -63,7 +63,7 @@ export const REPS = {
       const tOff = simOf(C, 3.17), release = simOf(C, 3.38), SPOT = { x: 1.75, z: 6.15 };
       const o1 = anchoredTrack(clips, [A, B, C], legs.o1, tOff, { ...SPOT, yaw: yawTo(SPOT, RIM) });
       // x1: square to o1 between him and the rim; the screen comes on his left (o1's right), a body's width off
-      const o0 = o1.hip(0), x1At = toward(o0, RIM, 1.15), S = add(side(x1At, o0, 0.64), -0.05, -0.2);
+      const o0 = o1.hip(0), x1At = toward(o0, RIM, 1.4), S = add(side(x1At, o0, 0.64), -0.05, -0.2);
       // (when o1 comes past it: the moment he's closest to the screen)
       let tS = tDrive, dS = 1e9; for (let t = tDrive; t < stopAt; t += 0.02) { const h = o1.hip(t), d = Math.hypot(h.x - S.x, h.z - S.z); if (d < dS) { dS = d; tS = t; } }
       const x1 = new Player(clips, legs.x1, 'x1').start('guard', x1At, o0);
@@ -325,7 +325,7 @@ export const REPS = {
       const X1 = x1.track(), X2 = x2.track(), X3 = x3.track();
       P.contest = [{ from: release - 0.32, rise: 0.25, to: release + 0.6, both: true, reach: 0.12 }];
       P.marks = { scram: tScram, fixed: tGo + 0.1 };
-      P.camFilm = { focus: (t) => fade(t, tGo + 0.3, tGo + 1.2, { o1: 1.0, x2: 0.8, o2: 1.0, x1: 1.0, x3: 1.2 }, { o1: 1.6, x2: 1.3, o2: 0.3, x3: 0.3 }), off: { x: -0.2, y: 6.0, z: 9.0 }, lookOff: { x: 0, z: -1.5 }, lookY: 1.0, fov: 52, spread: 0.2, span0: 3.0 };
+      P.camFilm = { focus: (t) => fade(t, tGo + 0.3, tGo + 1.2, { o1: 1.0, x2: 0.8, o2: 1.0, x1: 1.0, x3: 1.2 }, { o1: 1.6, x2: 1.3, o2: 0.3, x3: 0.3 }), off: { x: -0.2, y: 6.2, z: 9.4 }, lookOff: { x: -0.45, z: -1.5 }, lookY: 1.0, fov: 52, spread: 0.24, span0: 3.0 };
       P.camShot = { az: 0.22, back: 3.6, h: 2.5, fov: 58 };
       P.assign = [{ t: 0, map: { x1: 'o2', x2: 'o1', x3: 'o3' } }, { t: tScram, map: { x3: 'o2' } }, { t: tGo + 0.1, map: { x1: 'o3' } }];
       P.bad = [{ x: 'x1', from: 0, to: tGo + 0.1 }, { x: 'x2', from: 0, to: tScram }];

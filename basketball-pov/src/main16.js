@@ -226,13 +226,13 @@ function place(c, jx, jy) {
   camera.fov = c.fov; camera.setViewOffset(W, H, jx, jy, W, H); camera.updateProjectionMatrix(); camera.updateMatrixWorld();
 }
 const JIT = [[-0.25, -0.25], [0.25, 0.25], [0.25, -0.25], [-0.25, 0.25], [0, 0], [0.125, -0.375], [-0.375, 0.125], [0.375, 0.375]];
-function renderSub(rep, mode, st, k, first, fe) {
+function renderSub(rep, mode, st, k, first, fe, w = 1 / SUB) {
   poseAll(rep, st, mode, fe);
   place(window.camOverride || cam.at(rep.name, mode, st), JIT[k % JIT.length][0], JIT[k % JIT.length][1]);
   scene.updateMatrixWorld(true);
   if (first) { const v = floor.group.visible; gym.floor.visible = false; floor.group.visible = false; gym.reflector.onBeforeRender(renderer, scene, camera); gym.floor.visible = true; floor.group.visible = v; }
   renderer.setRenderTarget(rtScene); renderer.render(scene, camera);
-  accMat.uniforms.t.value = rtScene.texture; accMat.uniforms.w.value = 1 / SUB; quad.material = accMat;
+  accMat.uniforms.t.value = rtScene.texture; accMat.uniforms.w.value = w; quad.material = accMat;
   renderer.setRenderTarget(rtAccum); renderer.autoClear = false; renderer.render(quadScene, quadCam); renderer.autoClear = true;
 }
 function present(seed, fz) {
@@ -247,10 +247,11 @@ window.renderFrame = (i) => {
   const fr = frames[Math.min(i, frames.length - 1)], rep = reps[fr.rep], seg = SEQ[fr.seg];
   const fe = fr.freeze && !fr.card ? fr.fu * fr.fdur : null;
   renderer.setRenderTarget(rtAccum); renderer.setClearColor(0x000000, 1); renderer.clear();
-  const shutter = fr.freeze ? 0 : fr.rate / (2 * FPS);
-  for (let k = 0; k < SUB; k++) {
-    const st = fr.freeze ? fr.st : Math.min(seg.to, Math.max(seg.from, fr.st + ((k + 0.5) / SUB - 0.5) * shutter));
-    renderSub(rep, fr.cam, st, k, k === 0, fe);
+  // (a freeze has nothing moving: one draw, not SUB of the same pose)
+  const shutter = fr.freeze ? 0 : fr.rate / (2 * FPS), subs = fr.freeze ? 1 : SUB;
+  for (let k = 0; k < subs; k++) {
+    const st = fr.freeze ? fr.st : Math.min(seg.to, Math.max(seg.from, fr.st + ((k + 0.5) / subs - 0.5) * shutter));
+    renderSub(rep, fr.cam, st, k, k === 0, fe, 1 / subs);
   }
   hud.update(fr, fr.st, fr.card ? [] : tagsOn(rep, fr.st, fe, fr.cam));
   const fz = fr.freeze && !fr.card ? smooth(fr.fu * 8) : (fr.card ? 0.6 : 0);
