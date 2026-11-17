@@ -344,6 +344,8 @@ PLAYERS = {
     'd1':       ('03', 'm300', dict(team=AWAY, number=5, name='')),
     'd2':       ('02', 'm301', dict(team=AWAY, number=21, name='', skin='#4d2f22', hair='#121010')),
     'd3':       ('02', 'm301', dict(team=AWAY, number=8, name='', skin='#b07a55', hair='#241a13')),
+    # v16: the ball handler without a name on his back
+    'guard3':   ('04', 'm026', dict(team=HOME, number=3, name='')),
 }
 
 if __name__ == '__main__':

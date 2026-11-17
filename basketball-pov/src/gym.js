@@ -151,7 +151,7 @@ export function buildGym(renderer, scene, opts = {}) {
   const reflector = new Reflector(floorGeo, { textureWidth: Math.round(renderer.domElement.width / 2), textureHeight: Math.round(renderer.domElement.height / 2), multisample: 0 });
   reflector.rotation.x = -Math.PI / 2; reflector.position.set(0, 0, Z0 + FSIZE / 2); reflector.material.visible = false;
   reflector.textureMatrixRef = reflector.material.uniforms.textureMatrix.value;
-  const floor = new THREE.Mesh(floorGeo, floorMaterial(tex, reflector, { blur: 0.011, clamp: 1.1, strength: 0.3 })); floor.rotation.x = -Math.PI / 2; floor.position.copy(reflector.position); floor.receiveShadow = true;
+  const floor = new THREE.Mesh(floorGeo, floorMaterial(tex, reflector, { blur: 0.011, clamp: opts.reflectClamp ?? 1.1, strength: opts.reflect ?? 0.3 })); floor.rotation.x = -Math.PI / 2; floor.position.copy(reflector.position); floor.receiveShadow = true;
   scene.add(floor, reflector);
   const outer = new THREE.Mesh(new THREE.PlaneGeometry(80, 80), new THREE.MeshStandardMaterial({ color: 0x3a2e22, roughness: 0.7 }));
   outer.rotation.x = -Math.PI / 2; outer.position.y = -0.004; scene.add(outer);

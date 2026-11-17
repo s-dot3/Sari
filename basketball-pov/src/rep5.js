@@ -150,7 +150,7 @@ export class Rep {
         const t1 = Math.min(P0.dribble[1], i + 1 < segs.length ? segs[i + 1].at + (segs[i + 1].inert ? 0 : segs[i + 1].blend * 0.5) : P0.simEnd);
         if (t1 <= t0) continue;
         const c0 = sg.from + (t0 - sg.at) * sg.rate, c1 = sg.from + (t1 - sg.at) * sg.rate;
-        for (const p of findPushes(clip, c0 - 0.4, c1, P0.pushHand)) {
+        for (const p of findPushes(clip, c0 - 0.4, c1, sg.pushHand ?? P0.pushHand)) {
           const s0 = sg.at + (p.c0 - sg.from) / sg.rate, s1 = sg.at + (p.c1 - sg.from) / sg.rate;
           if (s1 >= t0 && s0 < t1 && s1 < P0.gatherAt - 0.05) pushes.push({ hand: p.hand, s0, s1 });
         }
@@ -313,7 +313,8 @@ export class Rep {
   // the ball before the shot takes over: from the gather into the two-hand hold
   heldBall(t) {
     const P0 = this.plan, P = this.pushes, hold0 = P0.hold ? P0.hold[1] : -1;
-    const from = P0.pass ? this.catchPoint() : (P.length ? this.gatherBall(P0.gatherAt) : this.holdAt(Math.max(hold0, 0)));
+    // (a catch that's dribbled before the gather is gathered from the last bounce, not from the catch)
+    const from = P0.pass && !P.length ? this.catchPoint() : (P.length ? this.gatherBall(P0.gatherAt) : this.holdAt(Math.max(hold0, 0)));
     const g = smooth((t - P0.gatherAt) / P0.gatherDur);
     return this.clearLegs(t, (t < P0.gatherAt ? this.holdAt(t) : from.clone()).lerp(this.holdBall(t), g));
   }
