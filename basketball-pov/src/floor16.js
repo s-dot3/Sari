@@ -9,7 +9,7 @@ import * as THREE from 'three';
 const Y = 0.014;
 const smooth = (t) => { t = Math.min(1, Math.max(0, t)); return t * t * (3 - 2 * t); };
 const mat = (color, opacity) => new THREE.MeshBasicMaterial({ color, transparent: true, opacity, depthWrite: false, toneMapped: false, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -2 });
-export const COLORS = { X: 0xff3b4e, O: 0xf4f4f1, line: 0xffc23a, off: 0xf4f4f1, def: 0xffc23a, bad: 0xff3b4e, good: 0x2fe377 };
+export const COLORS = { X: 0xffb02e, O: 0xf4f4f1, line: 0xffc23a, off: 0xf4f4f1, def: 0xffc23a, bad: 0xff3b4e, good: 0x2fe377 };
 
 // a flat ribbon along a polyline with an arrowhead at the end, revealed from the start by u (0..1)
 function ribbon(points, width, head = 0.34) {
@@ -36,7 +36,7 @@ export class Floor16 {
     this.lineGeo = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2).translate(0, 0, 0);
   }
   ring(name, team) {
-    if (!this.rings[name]) { const m = new THREE.Mesh(this.ringGeo, mat(COLORS[team], team === 'X' ? 0.9 : 0.55)); m.renderOrder = 3; this.group.add(m); this.rings[name] = m; }
+    if (!this.rings[name]) { const m = new THREE.Mesh(this.ringGeo, mat(COLORS[team], team === 'X' ? 0.7 : 0.5)); m.renderOrder = 3; this.group.add(m); this.rings[name] = m; }
     return this.rings[name];
   }
   line(key) {
@@ -82,7 +82,7 @@ export class Floor16 {
   // where: { name: {x,z} } for everyone on the floor; teams: { name: 'O'|'X' }; links: [{ from, to, u (0..1 drawn), alpha }]
   update(where, teams, links, st, freeze) {
     for (const [n, m] of Object.entries(this.rings)) m.visible = false;
-    for (const [n, p] of Object.entries(where)) { const m = this.ring(n, teams[n]); m.visible = true; m.position.set(p.x, 0, p.z); }
+    for (const [n, p] of Object.entries(where)) { if (!teams[n]) continue; const m = this.ring(n, teams[n]); m.visible = true; m.position.set(p.x, 0, p.z); }
     for (const m of Object.values(this.lines)) m.visible = false;
     links.forEach((l, k) => {
       const a = where[l.from], b = where[l.to]; if (!a || !b || l.u <= 0.001) return;

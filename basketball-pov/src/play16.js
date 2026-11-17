@@ -92,7 +92,10 @@ export const REPS = {
       const tSw = tS + 0.12;
       P.marks = { screen: tS, switch: tSw };
       // the coaches' angle: high behind the ball, weighted to the ball and the switch
-      P.camFilm = { focus: { o1: 1.6, x2: 1.0, o2: 0.6, x1: 0.6 }, off: { x: 0.3, y: 5.6, z: 8.6 }, lookOff: { x: 0, z: -2.0 }, lookY: 1.0, fov: 50 };
+      P.camFilm = { focus: { o1: 1.6, x2: 1.0, o2: 0.6, x1: 0.6 }, off: { x: 0.3, y: 4.5, z: 6.6 }, lookOff: { x: 0, z: -1.1 }, lookY: 0.6, fov: 54 };
+      // the big's job, for the meter and the strip: up at the level, the switch, wall up, contest
+      P.who = 'THE BIG'; P.labels = [{ t: 0, kind: 'level', open: 0 }, { t: tSw, kind: 'switch', open: 0 }, { t: tSw + 0.45, kind: 'wall', open: 0.05 }, { t: release - 0.35, kind: 'contest', open: 0 }];
+      Object.assign(P, { camRef: release - 0.4, camAngle: 0.8, camSide: 1, camH: 2.2 });
       P.camShot = { az: 0.22, back: 3.6, h: 2.5, fov: 58 };
       P.arms = [{ who: 'o2', kind: 'screen', from: tDrive - 0.25, to: tS + 0.22 }];
       P.assign = [{ t: 0, map: { x1: 'o1', x2: 'o2' } }, { t: tSw, map: { x1: 'o2', x2: 'o1' } }];
@@ -177,7 +180,9 @@ export const REPS = {
       planA.contest = [];
       const tSw = tCut + 0.32;
       P.marks = { cut: tCut, switch: tSw, catch: t1 + 0.05, pass: t0 };
-      P.camFilm = { focus: (t) => fade(t, t1 - 0.9, t1 + 0.1, { o3: 1.4, x2: 1.0, o2: 0.6, x3: 0.6, o1: 0.5 }, { o3: 1.6, x2: 1.2 }), off: { x: -0.7, y: 6.2, z: -8.4 }, lookOff: { x: 0.2, z: 0.9 }, lookY: 1.0, fov: 52, spread: 0.1, span0: 3.5 };
+      P.camFilm = { focus: (t) => fade(t, t1 - 0.9, t1 + 0.1, { o3: 1.4, x2: 1.0, o2: 0.6, x3: 0.6, o1: 0.5 }, { o3: 1.6, x2: 1.2 }), off: { x: -0.6, y: 4.8, z: -6.8 }, lookOff: { x: 0.2, z: 0.7 }, lookY: 0.6, fov: 54, spread: 0.1, span0: 3.5 };
+      P.who = 'THE BIG'; P.labels = [{ t: 0, kind: 'down', open: 0 }, { t: tSw, kind: 'jump', open: 0.05 }, { t: t1 - 0.35, kind: 'closing', open: 0.3 }, { t: t1 + 0.25, kind: 'wall', open: 0.05 }, { t: release - 0.35, kind: 'contest', open: 0 }];
+      Object.assign(P, { camRef: release - 0.4, camAngle: 0.8, camSide: 1, camH: 2.2 });
       P.camShot = { az: 0.22, back: 3.6, h: 2.5, fov: 58 };
       P.assign = [{ t: 0, map: { x1: 'o1', x2: 'o2', x3: 'o3' } }, { t: tSw, map: { x2: 'o3', x3: 'o2' } }];
       P.arrows = [
@@ -256,7 +261,9 @@ export const REPS = {
       const X1 = x1.track(), X2 = x2.track(), X3 = x3.track();
       P.contest = [{ from: release - 0.32, rise: 0.25, to: release + 0.6, both: true, reach: 0.1 }];
       P.marks = { cut: tBD + 0.12, dead: tBD + 1.05 };
-      P.camFilm = { focus: (t) => fade(t, tBD + 1.1, tBD + 1.9, { o3: 1.2, x3: 1.2, o1: 1.0, x1: 0.5, x2: 0.3 }, { o1: 1.6, x1: 1.2 }), off: { x: 0.4, y: 5.8, z: 8.8 }, lookOff: { x: 0, z: -1.6 }, lookY: 1.0, fov: 52, spread: 0.1, span0: 3.5 };
+      P.camFilm = { focus: (t) => fade(t, tBD + 1.1, tBD + 1.9, { o3: 1.2, x3: 1.2, o1: 1.0, x1: 0.5, x2: 0.3 }, { o1: 1.6, x1: 1.2 }), off: { x: 0.4, y: 4.6, z: 6.8 }, lookOff: { x: 0, z: -1.1 }, lookY: 0.6, fov: 54, spread: 0.1, span0: 3.5 };
+      P.who = 'ON THE BALL'; P.labels = [{ t: 0, kind: 'balanced', open: 0 }, { t: tGo + 0.1, kind: 'slide', open: 0.05 }, { t: release - 0.35, kind: 'contest', open: 0 }];
+      Object.assign(P, { camRef: release - 0.4, camAngle: 0.8, camSide: 1, camH: 2.2 });
       P.camShot = { az: 0.22, back: 3.6, h: 2.5, fov: 58 };
       P.assign = [{ t: 0, map: { x1: 'o1', x2: 'o2', x3: 'o3' } }];
       P.arrows = [
@@ -325,7 +332,9 @@ export const REPS = {
       const X1 = x1.track(), X2 = x2.track(), X3 = x3.track();
       P.contest = [{ from: release - 0.32, rise: 0.25, to: release + 0.6, both: true, reach: 0.12 }];
       P.marks = { scram: tScram, fixed: tGo + 0.1 };
-      P.camFilm = { focus: (t) => fade(t, tGo + 0.3, tGo + 1.2, { o1: 1.0, x2: 0.8, o2: 1.0, x1: 1.0, x3: 1.2 }, { o1: 1.6, x2: 1.3, o2: 0.3, x3: 0.3 }), off: { x: -0.2, y: 6.2, z: 9.4 }, lookOff: { x: -0.45, z: -1.5 }, lookY: 1.0, fov: 52, spread: 0.24, span0: 3.0 };
+      P.camFilm = { focus: (t) => fade(t, tGo + 0.3, tGo + 1.2, { o1: 1.0, x2: 0.8, o2: 1.0, x1: 1.0, x3: 1.2 }, { o1: 1.6, x2: 1.3, o2: 0.3, x3: 0.3 }), off: { x: -0.2, y: 4.8, z: 7.2 }, lookOff: { x: -0.9, z: -1.1 }, lookY: 0.6, fov: 54, spread: 0.24, span0: 3.0 };
+      P.who = 'THE BIG'; P.labels = [{ t: 0, kind: 'cushion', open: 0 }, { t: tStop - 0.4, kind: 'wall', open: 0.05 }, { t: release - 0.35, kind: 'contest', open: 0 }];
+      Object.assign(P, { camRef: release - 0.4, camAngle: 0.8, camSide: 1, camH: 2.2 });
       P.camShot = { az: 0.22, back: 3.6, h: 2.5, fov: 58 };
       P.assign = [{ t: 0, map: { x1: 'o2', x2: 'o1', x3: 'o3' } }, { t: tScram, map: { x3: 'o2' } }, { t: tGo + 0.1, map: { x1: 'o3' } }];
       P.bad = [{ x: 'x1', from: 0, to: tGo + 0.1 }, { x: 'x2', from: 0, to: tScram }];

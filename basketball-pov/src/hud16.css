@@ -24,10 +24,34 @@ html, body { margin: 0; padding: 0; background: #000; overflow: hidden; }
 .mode .fz { background: var(--amber); }
 
 /* caption */
-.cap { left: 50px; right: 50px; bottom: 150px; text-align: center; }
+.cap { left: 50px; right: 50px; top: 292px; text-align: center; }
 .cap .box { display: inline-block; font-family: 'B'; font-weight: 600; font-size: 46px; line-height: 1.2; padding: 18px 30px 20px; background: var(--ink);
   border-radius: 6px; box-shadow: 0 14px 40px rgba(0,0,0,0.5); }
 .cap .box b { color: var(--amber); font-weight: 700; }
+
+/* timing strip */
+.strip { left: 60px; width: 960px; top: 1566px; padding: 22px 0 0; }
+.strip::before { content: ''; position: absolute; left: -60px; right: -60px; top: -40px; height: 400px; background: linear-gradient(rgba(5,7,12,0), rgba(5,7,12,0.72) 34%, rgba(5,7,12,0.8)); z-index: -1; }
+.strip .row { display: flex; justify-content: space-between; align-items: center; font-weight: 800; font-size: 26px; letter-spacing: 3px; margin-bottom: 58px; text-shadow: 0 2px 8px rgba(0,0,0,0.8); }
+.strip .state { display: flex; align-items: center; gap: 14px; }
+.strip .state .lbl { color: rgba(255,255,255,0.75); }
+.strip .pill { font-weight: 900; font-size: 40px; letter-spacing: 2px; padding: 3px 16px 4px; background: var(--red); color: #fff; box-shadow: 0 0 24px rgba(255,59,78,0.5); }
+.strip .pill.warn { background: var(--amber); color: #1a1200; box-shadow: 0 0 24px rgba(255,194,58,0.5); }
+.strip .pill.open { background: var(--green); color: #04150a; box-shadow: 0 0 28px rgba(47,227,119,0.6); }
+.strip .sub { font-family: 'B'; font-weight: 700; font-size: 24px; letter-spacing: 0; color: rgba(255,255,255,0.88); }
+.strip .legend { display: flex; flex-direction: column; gap: 6px; font-size: 21px; letter-spacing: 2px; text-align: left; }
+.strip .legend i { display: inline-block; width: 18px; height: 18px; margin-right: 8px; vertical-align: -2px; }
+.strip .bar { position: relative; height: 34px; }
+.strip canvas { position: absolute; inset: 0; width: 960px; height: 34px; border-radius: 4px; box-shadow: 0 8px 26px rgba(0,0,0,0.55); }
+.strip .mk { position: absolute; top: -52px; bottom: -12px; width: 0; }
+.strip .mk::before { content: ''; position: absolute; left: -2px; top: 40px; bottom: 0; width: 4px; background: #fff; box-shadow: 0 0 8px rgba(0,0,0,0.6); }
+.strip .mk span { position: absolute; left: 0; top: 0; transform: translateX(-50%); font-weight: 900; font-size: 28px; letter-spacing: 2px; padding: 2px 10px; background: #fff; color: #0b0e16; white-space: nowrap; }
+.strip .mk.minor::before { width: 2px; left: -1px; background: rgba(255,255,255,0.75); }
+.strip .mk.minor span { background: transparent; color: #fff; font-size: 24px; text-shadow: 0 2px 6px rgba(0,0,0,0.9); top: 6px; }
+.strip .ph { position: absolute; top: -10px; bottom: -10px; width: 0; }
+.strip .ph::before { content: ''; position: absolute; left: -11px; top: -2px; border: 11px solid transparent; border-top: 13px solid #fff; border-bottom: 0; }
+.strip .ph::after { content: ''; position: absolute; left: -3px; top: 8px; bottom: 0; width: 6px; background: #fff; box-shadow: 0 0 14px rgba(255,255,255,0.9); }
+.strip .scale { display: flex; justify-content: space-between; margin-top: 14px; font-family: 'B'; font-weight: 600; font-size: 22px; color: rgba(255,255,255,0.7); text-shadow: 0 2px 6px rgba(0,0,0,0.9); }
 
 /* cards */
 .card { inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; background: rgba(4, 6, 12, 0.78); }
@@ -46,6 +70,7 @@ html, body { margin: 0; padding: 0; background: #000; overflow: hidden; }
 .card .stat .n.g { color: var(--green); }
 .card .stat .l { font-family: 'B'; font-weight: 600; font-size: 28px; line-height: 1.25; color: rgba(255,255,255,0.85); }
 .card .src { position: absolute; left: 50px; right: 50px; bottom: 120px; font-family: 'B'; font-weight: 600; font-size: 20px; line-height: 1.5; color: rgba(255,255,255,0.55); }
+.strip .mk.right span { transform: translateX(-88%); }
 
 .card .key .a { color: var(--amber); }
 

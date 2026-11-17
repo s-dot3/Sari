@@ -14,6 +14,8 @@ import { makeBall } from './ball.js';
 import { Cam16 } from './cam16.js';
 import { Floor16, COLORS } from './floor16.js';
 import { Hud16 } from './hud16.js';
+import { loadBones, makeBoneSkeleton, makeShoes } from './boneskel.js';
+import { FloorMeter } from './meter5.js';
 import { smooth } from './motion.js';
 
 const W = 1080, H = 1920, HZ = 240;
@@ -60,6 +62,18 @@ async function init() {
   const T = await loadTemplates(['04', '03', '02']);
   const players = {};
   for (const [name, s] of Object.entries(CAST)) { const { root, k } = makePlayerMesh(T, s); scene.add(root); players[name] = { root, rig: new Rig(root, k), spec: s }; }
+  // the film-room skeletons (v4-v11): anatomical bones on each rig, the players' own shoes - white for the offence,
+  // red for the defence - and nothing else of the model
+  const bones = await loadBones('../assets/bones');
+  const boneMat = new THREE.MeshStandardMaterial({ color: 0xe4d8c2, roughness: 0.52, metalness: 0, envMapIntensity: 0.8 });
+  for (const [name, p] of Object.entries(players)) {
+    const meshes = []; p.root.traverse(o => { if (o.isSkinnedMesh) meshes.push(o); });
+    const m = meshes.reduce((a, b) => (b.geometry.attributes.position.count > a.geometry.attributes.position.count ? b : a));
+    p.bones = makeBoneSkeleton(bones, m, { feet: false, material: boneMat }); p.shoes = makeShoes(m);
+    for (const o of meshes) o.visible = false;
+    const tint = new THREE.Color(CAST[name].team === 'X' ? 0xd8262f : 0xf2f2f0);
+    p.shoes.material = [].concat(p.shoes.material).map(mm => { const c = mm.clone(); c.map = null; c.color = tint; c.roughness = 0.6; return c; });
+  }
   const clips = {}; for (const c of CLIPS16) clips[c] = await loadClip(c);
   const legs = {}; for (const [n, p] of Object.entries(players)) legs[n] = p.rig.len.thigh + p.rig.len.calf;
   window.__legs = legs;
@@ -81,6 +95,7 @@ async function init() {
   }
   const ball = makeBall(scene);
   const floor = new Floor16(scene);
+  const meter = new FloorMeter(scene, { invert: true });
   const trackOf = (rep, who) => who === rep.cast.you ? rep.tracks.you : who === rep.cast.d1 ? rep.tracks.d1 : (rep.partA && who === rep.cast.A) ? rep.partA.tracks.you : rep.extra[who];
   const ballAt = (rep, t) => ((rep.partA && t < rep.plan.pass.t0) ? rep.partA : rep).ball(t).pos;
   const where = (name, who, t) => { const rep = reps[name]; if (who === 'ball') { const b = ballAt(rep, t); return { x: b.x, z: b.z }; } const h = trackOf(rep, who).hip(t); return { x: h.x, z: h.z }; };
@@ -100,11 +115,11 @@ async function init() {
   await document.fonts.ready;
   while (texLoads.done < texLoads.total) await new Promise(r => setTimeout(r, 100));
   await new Promise(r => setTimeout(r, 1500));
-  return { renderer, scene, camera, gym, players, reps, ball, floor, cam, frames, hud, rtScene, rtAccum, trackOf, ballAt };
+  return { renderer, scene, camera, gym, players, reps, ball, floor, meter, cam, frames, hud, rtScene, rtAccum, trackOf, ballAt };
 }
 
 const ctx = await init().catch(e => { window.__error = String(e.stack || e); throw e; });
-const { renderer, scene, camera, gym, players, reps, ball, floor, cam, frames, hud, rtScene, rtAccum, trackOf, ballAt } = ctx;
+const { renderer, scene, camera, gym, players, reps, ball, floor, meter, cam, frames, hud, rtScene, rtAccum, trackOf, ballAt } = ctx;
 
 const quadCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
 const VS = 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }';
@@ -131,7 +146,7 @@ const quadScene = new THREE.Scene(); quadScene.add(quad);
 let arrowRep = null;
 function overlays(rep, st, fe) {
   const P = rep.plan, where = {}, teams = {};
-  for (const n of rep.names) { const h = trackOf(rep, n).hip(st); where[n] = { x: h.x, z: h.z }; teams[n] = CAST[n].team; }
+  for (const n of rep.names) { const h = trackOf(rep, n).hip(st); where[n] = { x: h.x, z: h.z }; teams[n] = n === rep.cast.d1 ? null : CAST[n].team; }
   // who's got who: lines from each defender to his man; a change swaps them (in the freeze, if there's one on it)
   const links = [];
   const A = P.assign || [];
@@ -220,6 +235,8 @@ function poseAll(rep, st, mode, fe = null) {
   gym.net.update(B.state === 'net' ? B.netU : (B.state === 'drop' ? 1.2 : 0), B.state === 'net' ? 1 : 0);
   overlays(rep, st, fe);
   floor.group.visible = mode === 'film' || (rep.plan.floorInShot ?? false);
+  // the balance meter under the man with the contest (v5-v10), through his contest
+  meter.update(rep.balance(st), 1 - smooth((st - (rep.plan.release + 0.3)) / 0.3));
 }
 function place(c, jx, jy) {
   camera.position.set(c.pos.x, c.pos.y, c.pos.z); camera.up.set(0, 1, 0); camera.lookAt(c.look.x, c.look.y, c.look.z);
@@ -230,7 +247,7 @@ function renderSub(rep, mode, st, k, first, fe, w = 1 / SUB) {
   poseAll(rep, st, mode, fe);
   place(window.camOverride || cam.at(rep.name, mode, st), JIT[k % JIT.length][0], JIT[k % JIT.length][1]);
   scene.updateMatrixWorld(true);
-  if (first) { const v = floor.group.visible; gym.floor.visible = false; floor.group.visible = false; gym.reflector.onBeforeRender(renderer, scene, camera); gym.floor.visible = true; floor.group.visible = v; }
+  if (first) { const v = floor.group.visible, mv = meter.group.visible; gym.floor.visible = false; floor.group.visible = false; meter.group.visible = false; gym.reflector.onBeforeRender(renderer, scene, camera); gym.floor.visible = true; floor.group.visible = v; meter.group.visible = mv; }
   renderer.setRenderTarget(rtScene); renderer.render(scene, camera);
   accMat.uniforms.t.value = rtScene.texture; accMat.uniforms.w.value = w; quad.material = accMat;
   renderer.setRenderTarget(rtAccum); renderer.autoClear = false; renderer.render(quadScene, quadCam); renderer.autoClear = true;

@@ -1,9 +1,10 @@
 // v16 cameras (portrait). film: the coaches' angle - high up behind the offence, looking down the floor at the
 // whole action (the ball, the screen, the cut, everyone's man), riding a weighted middle of the players who matter
-// right now; shot: low behind the shooter's shoulder with his man in front of him and the rim, riding the ball in.
+// right now; shot: v5's duel view swinging round behind the shooter on the release (behind: low behind his shoulder).
 // Smoothed per rep with v5's critically damped follow and look-ahead.
 import * as THREE from 'three';
 import { clamp, smooth } from './motion.js';
+import { Cam5 } from './camera5.js';
 
 const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 const RIM3 = V(0, 3.05, 0);
@@ -11,13 +12,16 @@ const RIM3 = V(0, 3.05, 0);
 export class Cam16 {
   // where(repName, who, t) -> {x, z}: any player's spot in a rep
   constructor(reps, where) {
-    this.reps = reps; this.where = where; this.paths = {};
+    this.reps = reps; this.where = where; this.paths = {}; this.c5 = Object.create(Cam5.prototype); this.c5.reps = reps;
     for (const [name, rep] of Object.entries(reps)) for (const mode of ['film', 'shot']) this.paths[name + ':' + mode] = this.bake(rep, mode);
   }
   ideal(rep, mode, t) {
     // shot: low behind the shooter's shoulder, the shooter and the man contesting him in front of the rim; after the
     // release it rides the ball to the rim
-    if (mode === 'shot') {
+    // shot: v5's - the duel view on the shooter and his man up to the release, then round behind the shooter riding
+    // the ball to the rim, in one shot
+    if (mode === 'shot') return this.c5.ideal(rep, 'shot', t);
+    if (mode === 'behind') {
       const P = rep.plan, C = P.camShot || {}, S = rep.frame('you', P.release).p, y = rep.frame('you', Math.min(t, P.release)).p;
       const away = V(S.x - RIM3.x, 0, S.z - RIM3.z).normalize(), a = (C.az ?? 0.22) * (C.side ?? 1);
       const dir = V(away.x * Math.cos(a) - away.z * Math.sin(a), 0, away.x * Math.sin(a) + away.z * Math.cos(a)).normalize();
