@@ -261,7 +261,8 @@ export const REPS = {
       const X1 = x1.track(), X2 = x2.track(), X3 = x3.track();
       P.contest = [{ from: release - 0.32, rise: 0.25, to: release + 0.6, both: true, reach: 0.1 }];
       P.marks = { cut: tBD + 0.12, dead: tBD + 1.05 };
-      P.camFilm = { focus: (t) => fade(t, tBD + 1.1, tBD + 1.9, { o3: 1.2, x3: 1.2, o1: 1.0, x1: 0.5, x2: 0.3 }, { o1: 1.6, x1: 1.2 }), off: { x: 0.4, y: 4.6, z: 6.8 }, lookOff: { x: 0, z: -1.1 }, lookY: 0.6, fov: 54, spread: 0.1, span0: 3.5 };
+      // (further back than the others: the ball handler stays in the picture, above the panel, while the cut goes to the rim)
+      P.camFilm = { focus: (t) => fade(t, tBD + 1.1, tBD + 1.9, { o3: 1.0, x3: 1.0, o1: 1.5, x1: 0.8, x2: 0.3 }, { o1: 1.6, x1: 1.2 }), off: { x: 0.3, y: 5.0, z: 8.6 }, lookOff: { x: -0.2, z: 0 }, lookY: 0.6, fov: 54, spread: 0.1, span0: 3.5 };
       P.who = 'ON THE BALL'; P.labels = [{ t: 0, kind: 'balanced', open: 0 }, { t: tGo + 0.1, kind: 'slide', open: 0.05 }, { t: release - 0.35, kind: 'contest', open: 0 }];
       Object.assign(P, { camRef: release - 0.4, camAngle: 0.8, camSide: 1, camH: 2.2 });
       P.camShot = { az: 0.22, back: 3.6, h: 2.5, fov: 58 };
