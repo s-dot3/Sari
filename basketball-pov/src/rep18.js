@@ -82,6 +82,13 @@ export class Rep18 extends Rep {
   youPose(t) {
     const Y = super.youPose(t), P0 = this.plan;
     if (!P0.rec) return Y;
+    // the drill: nobody guards him - eyes on the tape on the wall, or on the rim
+    if (P0.drill) {
+      const h = this.tab('head', t), f = this.fwd(t);
+      Y.opt.look = P0.drill === 'tap' ? (P0.tapAt ? V(P0.tapAt.x, P0.tapAt.y, P0.tapAt.z) : h.addScaledVector(f, 0.8).setY(h.y + 0.45)) : RIM.clone();
+      Y.opt.lookW = 0.7;
+      return Y;
+    }
     let w = Math.max(Y.opt.lookW, P0.lookW ?? 0.8);
     for (const e of P0.eyes || []) { const k = smooth((t - e.from) / 0.12) * (1 - smooth((t - e.to) / 0.15)); w += (e.w - w) * k; }
     Y.opt.lookW = w;
