@@ -127,8 +127,9 @@ export const REPS = {
       P.eyes = [{ from: tSpin - 0.05, to: tOut, w: 0.05 }];
       // him: with the drive, sliding; a reaction time after the spin starts he's still going with the drive, then
       // stops, turns and chases - late
-      const x = new Player(clips, legs.d1, 'd1').start('guard', toward(you.hip(0), RIM, 1.9), you.hip(0));
-      x.follow((t) => toward(you.hip(t), RIM, 1.7), (t) => you.hip(t), 0.1, tSpin + RT - 0.05, { rt: RT });
+      // (a little more room than the others: the spin swings the ball and the arms round wide)
+      const x = new Player(clips, legs.d1, 'd1').start('guard', toward(you.hip(0), RIM, 2.2), you.hip(0));
+      x.follow((t) => toward(you.hip(t), RIM, 2.05), (t) => you.hip(t), 0.1, tSpin + RT - 0.05, { rt: RT });
       const d0 = x.hip(tSpin + RT), wrong = sideways(d0, you.hip(tSpin + RT), you.hip(tSpin), you.hip(tSpin - 0.35), 1.0);
       x.go(wrong.way, wrong.to, tSpin + RT, tOut + RT, { rmin: 0.8 });
       const tRe = recover(clips, legs.d1, x, you, release, 1.45);
