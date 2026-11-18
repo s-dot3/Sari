@@ -3,7 +3,8 @@
 2K-style gameplay clips and breakdowns, rendered from three.js and driven by real motion capture.
 
 - **Compilation:** every basketball video below, v1 to v11, back to back in one portrait clip. [`out/compilation.mp4`](out/compilation.mp4) (6:37, 720×1280, 30 fps, H.264 + AAC; the landscape v1-v3 sit over a blurred fill)
-- **v16 (latest): film room, "No Open Looks".** Team defence, three on three, with the skeletons in the gym like the rest of the film room: switching a ball screen, killing a pin-down for a shooter, taking away a backdoor cut, and a scram switch to fix a mismatch, every possession ending in a contested miss. From a high team angle with the play drawn on the floor (who's got who, the switch, the cut), call-outs over the players, the balance meter under the defender with the contest, a shot clock, freezes and slow motion, then the duel view swinging round behind the shooter for the shot. [`out/no_open_looks.mp4`](out/no_open_looks.mp4) (1080×1920 portrait, 30 fps, H.264 + AAC)
+- **v17 (latest): film room, "Unguardable".** The art of shooting the three, one on one with the skeletons in the gym: a real behind-the-back into a cross back and a step-back three, the snatch back off pound dribbles into a pull-up three, and a pump fake that sends the closeout flying into a side-step three. Each time his weight goes the wrong way first (the balance meter under him turns green) and each one is a make. Then the wall drill for the timing: the 1-2, dip and jump, tapping the wall at the very top, then the same rise with the ball, released at that same top. [`out/unguardable.mp4`](out/unguardable.mp4) (1080×1920 portrait, 30 fps, H.264 + AAC)
+- v16: film room, "No Open Looks". Team defence, three on three, with the skeletons in the gym like the rest of the film room: switching a ball screen, killing a pin-down for a shooter, taking away a backdoor cut, and a scram switch to fix a mismatch, every possession ending in a contested miss. From a high team angle with the play drawn on the floor (who's got who, the switch, the cut), call-outs over the players, the balance meter under the defender with the contest, a shot clock, freezes and slow motion, then the duel view swinging round behind the shooter for the shot. [`out/no_open_looks.mp4`](out/no_open_looks.mp4) (1080×1920 portrait, 30 fps, H.264 + AAC)
 - v15: "Snatch Crossover". An 8-second cinematic clip: a glowing X-ray skeleton with faint blue muscle, alone on an arena floor at night with the crowd in the dark beyond. Right-hand pound dribbles, the snatch back left in a low crossover, a dead stop on a 1-2, straight up with no drift, the jumper at the top of the jump, a high arc and a swish. One take that swings round behind him as he rises, easing into slow motion for the shot. [`out/snatch_crossover_skeleton.mp4`](out/snatch_crossover_skeleton.mp4) (720×1280 portrait, 30 fps, H.264 + AAC)
 - v14: "Under the El". A brand-new street-ball clip in the style of the user's own (a skeleton cooking people at a park court with a crowd round it, shot on a phone), but a different court, different people and different plays: a city court on a sunny afternoon beside an elevated subway line (a train goes by), the skeleton against a man in a royal-blue tank and a man in a gold tee, three possessions of real handles into real finishes, filmed from behind his shoulder, with no talking on the soundtrack. [`out/under_the_el.mp4`](out/under_the_el.mp4) (1080×1920 portrait, 30 fps, H.264 + AAC)
 - v13: "Game Speed". Four new plays at full speed, each one take from the first dribble to the net, no freezes and no slow motion: a crossover drive into a layup off the glass, a spin move into a pull-up, through the legs into a step-back three, and a double crossover into a pull-up. [`out/game_speed.mp4`](out/game_speed.mp4) (1080×1920 portrait, 30 fps, H.264 + AAC)
@@ -34,6 +35,22 @@ It writes three files:
 - `clip_overlay.mp4`: the footage with the tracked skeleton drawn on it.
 - `clip_pose.mp4`: the skeleton alone on black, the pose-reference format that AI video tools take.
 - `clip.json`: per-frame 2D image landmarks with visibility, plus 3D world landmarks in metres around the hips.
+
+## v17: what it shows
+
+One on one: the shooter (white shoes) against his man (red shoes), v8's film-room page. Each iso plays live into the move, freezes as the defender reacts, plays the move and the rise in slow motion, swings round behind the shooter to ride the ball in, and freezes on the make. The floor meter under the defender shows his weight: red, he can still contest; green, he's going the wrong way.
+
+1. **Behind the back.** Cross, cross, then a real behind-the-back (the right hand wraps behind the hips and the left takes it on the other side). He goes with it, and the cross back and the step-back leave him leaning away from where the shot goes up.
+2. **The snatch.** Pound dribbles going right, he slides with every one, then the snatch back left and straight up on a 1-2 while he's still going right.
+3. **The pump fake.** He closes out hard, the fake (ball up, eyes on the rim) gets him off his feet, and one dribble left into a side-step three while he's still coming down.
+4. **The wall: timing.** With no ball: the 1-2, the dip and straight up, tapping the tape on the wall at the very top. Then the same 1-2, dip and rise with the ball coming up with the legs, released at the top, where the hand hit the wall. The strip at the bottom is the jump itself (the hips over time) with the top marked.
+
+## How v17 is made
+
+- **Motion:** CMU 06_13 (the freestyle take: the behind-the-back at 20.4 s, found by where the hand pushes the ball relative to the hips, and its crossovers and step-back hop, cut where the poses match with `tools/transit.py`), 06_13's pound dribbles and snatch into 124_05's 1-2 (as v15), 78_23's shot fake and break left, and 124_05's jump shot for every shot and for the wall drill.
+- **The defender:** v14's footwork planner keeps him in front (`Player.follow` in `src/moves16.js`); a reaction time after each move he commits the way it showed, a slide across the line between them, then recovers late with a closeout run. The pump-fake closeout is v8's: he leaves his feet at the fake carrying his run and lands past the shooter.
+- **The drill:** the same segments for both reps, so the rise is the same motion to the frame. With no ball, the right hand is driven up to the tape on a wall panel at his shoulder height at the top plus a reach, and a TAP burst marks the touch.
+- **Files:** `src/play17.js`, `src/cam17.js`, `src/hud17.js`, `src/hud17.css`, `src/timeline17.js`, `src/main17.js`, `src/index17.html`, `tools/plan17.mjs`; sound from `tools/audio_gym.py`.
 
 ## v16: what it shows
 
@@ -499,6 +516,8 @@ A right-wing isolation with the clock running out and your team down two.
 npm install
 pip install pillow numpy scipy imageio-ffmpeg trimesh networkx mediapipe nibabel scikit-image
 npm run assets      # Rocketbox models + uniforms, CMU mocap clips, the v12 brain
+npm run preview:v17 # quick 540x960 check of v17
+npm run render:v17  # final 1080x1920 v17 with audio -> out/unguardable.mp4
 npm run preview:v16 # quick 540x960 check of v16
 npm run render:v16  # final 1080x1920 v16 with audio -> out/no_open_looks.mp4
 npm run preview:v15 # quick 360x640 check of v15
