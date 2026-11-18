@@ -3,7 +3,7 @@ import { startServer, openPage } from './harness.mjs';
 import { execFileSync } from 'node:child_process';
 const [,, clip, out, view, ...ts] = process.argv;
 const server = await startServer();
-const { browser, page } = await openPage(server, 'src/clipview.html', 'clip=' + clip, { width: 640, height: 640 });
+const { browser, page } = await openPage(server, process.env.PAGE || 'src/clipview.html', 'clip=' + clip, { width: 640, height: 640 });
 const info = await page.evaluate(() => window.info);
 console.log(clip, JSON.stringify(info));
 const times = ts.length ? ts.map(Number) : Array.from({ length: 12 }, (_, i) => +(i * info.dur / 11).toFixed(2));

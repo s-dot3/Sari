@@ -31,7 +31,8 @@ export function calibrate(clip, ourLeg) {
   for (let i = 0; i < clip.n; i++) for (const s of ['l', 'r']) { const h = clip.pos[s + 'tibia'][i * 3 + 1] - minY; if (h < 0.13) hs.push(h); }
   hs.sort((a, b) => a - b);
   const planted = hs.length ? hs[Math.floor(hs.length * 0.3)] : 0.09;
-  clip.cal = { ourLeg, minY, footRest, scale, lift: Math.max(0, OUR_ANKLE / scale - planted) };
+  // (BallPlay-M's ankle joints sit higher than our model's: those takes are let down as well as lifted)
+  clip.cal = { ourLeg, minY, footRest, scale, lift: clip.rec ? OUR_ANKLE / scale - planted : Math.max(0, OUR_ANKLE / scale - planted) };
   return clip.cal;
 }
 
@@ -222,6 +223,7 @@ export class Track {
       const P0 = this.atIndex(i - 1, t0), Pm = this.atIndex(i - 1, t0 - h), N0 = this.segTargets(i, t0), Np = this.segTargets(i, t0 + h);
       const off = { pos: {}, vel: {}, quat: {}, yaw: 0 };
       for (const k of Object.keys(N0.pos)) {
+        if (!P0.pos[k]) continue; // (a joint the previous take doesn't have - a take's own ball - starts where it is)
         off.pos[k] = P0.pos[k].clone().sub(N0.pos[k]);
         off.vel[k] = P0.pos[k].clone().sub(Pm.pos[k]).sub(Np.pos[k].clone().sub(N0.pos[k])).multiplyScalar(1 / h);
       }
@@ -230,7 +232,7 @@ export class Track {
       sg._off = off;
     }
     const o = sg._off, tau = t - sg.at, lam = 6.6 / sg.inert, e = Math.exp(-lam * tau), k = (1 + lam * tau) * e;
-    for (const j of Object.keys(T.pos)) T.pos[j].addScaledVector(o.pos[j], k).addScaledVector(o.vel[j], tau * e);
+    for (const j of Object.keys(T.pos)) if (o.pos[j]) T.pos[j].addScaledVector(o.pos[j], k).addScaledVector(o.vel[j], tau * e);
     const I = new THREE.Quaternion();
     for (const j of Object.keys(T.quat)) T.quat[j] = I.clone().slerp(o.quat[j], k).multiply(T.quat[j]);
     T.yaw += o.yaw * k;

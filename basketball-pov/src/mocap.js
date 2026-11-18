@@ -25,6 +25,9 @@ export async function loadClip(name) {
     }
     c.quat[k] = q;
   }
+  // a take with its own ball (BallPlay-M: the ball rides along as a joint, 'ball') and the hand-ball contact flags
+  c.rec = !!d.pos.ball;
+  if (d.contact) c.contact = Uint8Array.from(d.contact);
   // leg / arm lengths of the performer
   const P = (k, i) => new THREE.Vector3(c.pos[k][i * 3], c.pos[k][i * 3 + 1], c.pos[k][i * 3 + 2]);
   c.legLen = P('lhipjoint', 0).distanceTo(P('lfemur', 0)) + P('lfemur', 0).distanceTo(P('ltibia', 0));
@@ -95,7 +98,9 @@ export function blendTargets(a, b, u, turnRef = null) {
   const qa = new THREE.Quaternion().setFromAxisAngle(_Y, -a.yaw), qb = new THREE.Quaternion().setFromAxisAngle(_Y, -b.yaw);
   const q = new THREE.Quaternion().setFromAxisAngle(_Y, yaw);
   const T = { pos: {}, quat: {}, yaw };
-  for (const k of Object.keys(a.pos)) {
+  for (const k of new Set([...Object.keys(a.pos), ...Object.keys(b.pos)])) {
+    // (a joint only one side has - a take's own ball - is kept as that side has it)
+    if (!a.pos[k] || !b.pos[k]) { T.pos[k] = (a.pos[k] || b.pos[k]).clone(); continue; }
     const la = a.pos[k].clone().sub(ha).applyQuaternion(qa), lb = b.pos[k].clone().sub(hb).applyQuaternion(qb);
     T.pos[k] = la.lerp(lb, u).applyQuaternion(q).add(hip);
   }

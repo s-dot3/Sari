@@ -38,6 +38,17 @@ for f in 06/06.asf 78/78.asf 124/124.asf 127/127.asf 06/06_06.amc 06/06_15.amc 1
   n=$(basename "$f"); [ -s "assets/mocap/$n" ] || curl -sf -o "assets/mocap/$n" "http://mocap.cs.cmu.edu/subjects/$f"
 done
 python3 tools/mocap.py 06_06 06_15 124_06 78_20 78_22 78_25 78_27 78_30 78_32 78_12 06_04 06_13 124_05 78_28 06_14 78_26 127_04 78_13 78_33 78_34
+# Real basketball mocap with the ball tracked, for v18: the BallPlay-M sample in SkillMimic (Wang et al., CVPR 2025;
+# Apache-2.0), converted to our clip JSON by tools/ballplay.py (no torch: a restricted unpickler rebuilds only the tensors)
+if [ ! -s assets/mocap/json/bp_shot_style1.json ]; then
+  SM=$(mktemp -d)
+  git clone -q --depth 1 --filter=blob:none --sparse https://github.com/wyhuai/SkillMimic "$SM/SkillMimic"
+  BP=skillmimic/data/motions/BallPlay-M
+  (cd "$SM/SkillMimic" && git sparse-checkout set skillmimic/data/assets/mjcf $(for m in back layup legturn lleg_style1 lleg_style2 lrun pass rrun rturn2lhand run shot_style1 shot_style2 shot_style3 turn turnhook turnlayup; do echo $BP/$m; done))
+  python3 -I tools/ballplay.py "$SM/SkillMimic" assets/mocap/json
+  { printf 'assets/mocap/json/bp_*.json: converted from the BallPlay-M sample in SkillMimic (https://github.com/wyhuai/SkillMimic;\nWang et al., CVPR 2025) by tools/ballplay.py, under the Apache License 2.0:\n\n'; cat "$SM/SkillMimic/LICENSE"; } > assets/mocap/BALLPLAY_LICENSE.txt
+  rm -rf "$SM"
+fi
 # Anatomical bone meshes for v4: the OpenSim full-body model (Rajagopal et al. 2016) from opensim-org/opensim-models,
 # posed and exported by tools/bones.py (needs: pip install trimesh networkx scipy)
 if [ ! -s assets/bones/bones.bin ]; then
