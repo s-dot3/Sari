@@ -142,10 +142,11 @@ export const REPS = {
       return { you, d1, players: { you, d1 }, log };
     },
   },
-  // 4a - THE WALL. No ball: set, dip and straight up - and tap the wall at the very top
+  // 4a - THE WALL. Off-hand side to the wall, ball in the shooting hand: set, dip and straight up - the off hand
+  // taps the wall at the very top as the ball goes up off the other, a soft one up in the air
   wall: {
-    simEnd: 2.45,
-    plan: { rec: true, shotClip: SHOTS.bp_shot_style1.rel, flight: 1.1, noBall: true, drill: 'tap' },
+    simEnd: 3.1,
+    plan: { rec: true, shotClip: SHOTS.bp_shot_style1.rel, flight: 1.1, drill: 'tap', offHand: true, formShot: { up: 2.7, fwd: 0.35 } },
     build(clips, legs) { return drill(this.plan, clips, legs, 'tap'); },
   },
   // 4b - THE SAME RISE, WITH THE BALL: let it go at that same top
@@ -157,14 +158,15 @@ export const REPS = {
 };
 
 // the drill: one and the same motion for both - set, a breath, then the take's dip and straight up (its little air
-// turn taken out); the wall rep faces the side wall a step off it, the shot rep the rim from the top of the key
+// turn taken out). The wall rep stands side-on to the side wall, his off hand (the left: the performer shoots right
+// handed) an arm's reach off it, facing along it; the shot rep faces the rim from the top of the key
 function drill(P, clips, legs, kind) {
   const tGo = 0.55, S = SHOTS.bp_shot_style1;
   const A = { clip: 'bp_shot_style1', from: 0.02, at: 0, idle: { amp: 0.025, period: 1.6 } };
   const B = { clip: 'bp_shot_style1', from: 0.02, at: tGo, blend: 0.2, shot: true, unwind: { from: S.off, to: S.land, ramp: 0.08 } };
   P.gatherAt = tGo + 0.05;
   const tOff = simOf(B, S.off), top = simOf(B, S.top), land = simOf(B, S.land);
-  const SPOT = kind === 'tap' ? { x: 9.08, z: 3.0 } : { x: 0.0, z: 7.6 }, FACE = kind === 'tap' ? { x: 20, z: 3.0 } : RIM;
+  const SPOT = kind === 'tap' ? { x: 9.6 - 0.62, z: 3.0 } : { x: 0.0, z: 7.6 }, FACE = kind === 'tap' ? { x: 9.6 - 0.62, z: 20 } : RIM;
   const you = anchoredTrack(clips, [A, B], legs.you, tOff, { ...SPOT, yaw: yawTo(SPOT, FACE) });
   // nobody guards him: the engine's second player stands far off the floor, never in the picture
   const d1 = new Track(clips, [{ clip: '78_30', from: 0.93, at: 0, idle: { amp: 0.1, period: 1.6 }, place: { x: 40, z: 40, yaw: 0 } }], legs.d1);

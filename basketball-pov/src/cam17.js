@@ -19,6 +19,13 @@ export class Cam17 {
     // the wall: from behind his shoulder at 45 degrees, so the wall's face is in the picture with the tape on it;
     // with the ball: from beside him, chest high, the whole jump and the release in the picture
     const tap = P.drill === 'tap';
+    // the off-hand wall drill: from in front of him, off his shooting side, so the wall beside him and both hands are
+    // in the picture - the off hand going up to the tape, the ball going up off the other - and the ball's flight
+    if (tap && P.offHand) {
+      const p = S.clone().addScaledVector(f, 3.1).addScaledVector(r, 1.2 * s); p.y = 1.65;
+      const lk = S.clone().addScaledVector(r, -0.22 * s); lk.y = 1.62;
+      return { pos: p, look: lk, fov: 64 };
+    }
     const pos = S.clone().addScaledVector(r, (tap ? 2.7 : 3.6) * s).addScaledVector(f, tap ? -1.8 : 0.4); pos.y = tap ? 1.75 : 1.55;
     const look = S.clone().addScaledVector(f, tap ? 0.1 : 0.3); look.y = tap ? 1.75 : 1.55;
     let fov = tap ? 62 : 58;

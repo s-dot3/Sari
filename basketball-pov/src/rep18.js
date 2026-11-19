@@ -75,6 +75,23 @@ export class Rep18 extends Rep {
     if (!this._catch) this._catch = this.recBall(this.plan.pass.t1);
     return this._catch;
   }
+  // plan.formShot: { up, fwd } m/s - a soft one shot up in the air off the release (to himself, no rim): up and down
+  // in front of him, then the floor; .hits are its bounces (for the sound)
+  formBall(t) {
+    const P0 = this.plan;
+    if (!this._form) {
+      const p = this.recBall(P0.release), f = this.fwd(P0.release), fs = P0.formShot, dt = 1 / HZ;
+      const v = V(f.x * (fs.fwd ?? 0.4), fs.up ?? 3.3, f.z * (fs.fwd ?? 0.4)), pts = [], hits = [];
+      const q = p.clone();
+      for (let tt = P0.release; tt <= P0.simEnd + 1e-6; tt += dt) {
+        pts.push(q.clone()); v.y -= 9.81 * dt; q.addScaledVector(v, dt);
+        if (q.y < BALL_R && v.y < 0) { q.y = BALL_R; if (v.y < -0.5) hits.push({ t: tt, v: -v.y }); v.y = -v.y * 0.62; v.x *= 0.8; v.z *= 0.8; if (v.y < 0.3) v.y = 0; }
+      }
+      this._form = { pts, hits };
+    }
+    const F = this._form, i = clamp(Math.round((t - P0.release) * HZ), 0, F.pts.length - 1);
+    return { B: F.pts[i].clone(), state: 'loose' };
+  }
   // a layup (plan.layup) goes off the glass from where the take's hand let it go
   layupBall(t) {
     if (this.plan.rec && !this._rel) {
@@ -95,6 +112,7 @@ export class Rep18 extends Rep {
       const i = clamp(Math.round(t * HZ), 0, this.T.n - 1);
       return { B: this.recBall(t), state: this.recHeld[i] > 0.5 ? 'held' : 'dribble', ov: {} };
     }
+    if (P0.formShot) return { ...this.formBall(t), ov: {} };
     // (a pass out: from the release the ball is the catcher's rep's)
     if (P0.passOut) return { B: this.recBall(P0.release), state: 'gone', ov: {} };
     if (P0.layup) return { ...this.layupBall(t), ov: {} };
@@ -125,7 +143,8 @@ export class Rep18 extends Rep {
     // the drill: nobody guards him - eyes on the tape on the wall, or on the rim
     if (P0.drill) {
       const h = this.tab('head', t), f = this.fwd(t);
-      Y.opt.look = P0.drill === 'tap' ? (P0.tapAt ? V(P0.tapAt.x, P0.tapAt.y, P0.tapAt.z) : h.addScaledVector(f, 0.8).setY(h.y + 0.45)) : RIM.clone();
+      // (side-on to the wall for the off-hand drill: eyes straight ahead at rim height, where the shot would go)
+      Y.opt.look = P0.drill === 'tap' ? (P0.offHand ? h.addScaledVector(f, 6).setY(3.05) : P0.tapAt ? V(P0.tapAt.x, P0.tapAt.y, P0.tapAt.z) : h.addScaledVector(f, 0.8).setY(h.y + 0.45)) : RIM.clone();
       Y.opt.lookW = 0.7;
       return Y;
     }

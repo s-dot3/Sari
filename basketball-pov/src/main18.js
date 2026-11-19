@@ -60,12 +60,12 @@ async function init() {
   const rigs = { you: players.you.rig, d1: players.d1.rig };
   const reps = {};
   for (const name of Object.keys(REPS)) reps[name] = new Rep18(name, buildRep(name, clips, legs), rigs, clips, { ...REPS[name].plan, simEnd: REPS[name].simEnd });
-  // the wall drill's wall: a light panel on the side wall where he jumps, with a strip of tape at the height his hand
-  // reaches at the top of the jump (his shoulder there, plus a reach)
+  // the wall drill's wall: a light panel on the side wall beside him, with a strip of tape where his off hand gets to
+  // at the top of the jump (up and out from his off shoulder there)
   for (const rep of Object.values(reps)) if (rep.plan.drill === 'tap') {
     const P = rep.plan, Y = rep.youPose(P.marks.top); players.you.rig.applyMocap(Y.T, Y.T.src, {});
-    const sh = players.you.rig.P.R_UpperArm.clone();
-    P.tapAt = { x: P.wallX - 0.035, y: sh.y + 0.6, z: sh.z };
+    const sh = players.you.rig.P.L_UpperArm.clone();
+    P.tapAt = { x: P.wallX - 0.035, y: sh.y + 0.42, z: sh.z + 0.04 };
     const panel = new THREE.Mesh(new THREE.PlaneGeometry(2.6, 3.8), new THREE.MeshStandardMaterial({ color: 0x9a9da3, roughness: 0.9 }));
     panel.rotation.y = -Math.PI / 2; panel.position.set(P.wallX - 0.015, 1.9, P.tapAt.z); panel.receiveShadow = true; scene.add(panel);
     const tape = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 0.07), new THREE.MeshBasicMaterial({ color: 0xffc23a, toneMapped: false }));
@@ -110,20 +110,19 @@ const outMat = new THREE.ShaderMaterial({ uniforms: { t: { value: rtAccum.textur
 const quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), accMat);
 const quadScene = new THREE.Scene(); quadScene.add(quad);
 
-// the wall drill: no ball - both hands his own until the dip, then the right comes up with the rise and is flat on the
-// wall at the very top, and comes away as he drops
+// the wall drill: the off hand leaves the ball on the way up, goes up and out and is flat on the wall at the very top
+// - as the shooting hand lets the ball go - and comes away as he drops
 const UPV = new THREE.Vector3(0, 1, 0);
 function tapHand(rep, st, T) {
-  const P = rep.plan, w = smooth((st - (P.marks.off - 0.2)) / 0.22) * (1 - smooth((st - (P.marks.top + 0.1)) / 0.25));
+  const P = rep.plan, a = P.marks.off - 0.16, w = smooth((st - a) / 0.2) * (1 - smooth((st - (P.marks.top + 0.12)) / 0.25));
   if (w <= 0) return null;
-  const sh = T.pos.rhumerus, wall = P.tapAt;
-  const u = smooth((st - (P.marks.off - 0.2)) / (P.marks.top - (P.marks.off - 0.2)));
-  const from = sh.clone().add(new THREE.Vector3(0.12, 0.05, 0)), pos = from.lerp(new THREE.Vector3(wall.x, wall.y, wall.z), u);
-  return { R: { pos, palm: new THREE.Vector3(1, 0.1, 0).normalize(), dir: UPV.clone(), pole: new THREE.Vector3(0, -0.7, 0.5).normalize(), curl: 0.1, w } };
+  const wall = P.tapAt, u = smooth((st - a) / (P.marks.top - a));
+  const pos = T.pos.lradius.clone().lerp(new THREE.Vector3(wall.x, wall.y, wall.z), u);
+  return { L: { pos, palm: new THREE.Vector3(1, 0.05, 0).normalize(), dir: new THREE.Vector3(0.15, 1, 0.1).normalize(), pole: new THREE.Vector3(0.2, -0.8, -0.35).normalize(), curl: 0.08, w } };
 }
 function poseAll(rep, st, mode) {
   const P0 = rep.plan, Y = rep.youPose(st);
-  if (P0.noBall) { const ov = tapHand(rep, st, Y.T); Y.opt = { ...Y.opt, handOverride: ov || {} }; }
+  if (P0.drill === 'tap') { const ov = tapHand(rep, st, Y.T); Y.opt = { ...Y.opt, handOverride: ov || {} }; }
   players.you.rig.applyMocap(Y.T, Y.T.src, Y.opt);
   players.d1.root.visible = !P0.drill; ball.visible = !P0.noBall;
   const D = rep.d1Pose(st); players.d1.rig.applyMocap(D.T, D.T.src, D.opt);
@@ -208,6 +207,14 @@ window.events = () => {
       const push = (arr, st, extra = {}) => { if (st >= s.from && st < s.to) arr.push({ t: v0 + (st - s.from) / s.rate, rate: s.rate, ...extra }); };
       for (const f of rep.flights) push(ev.bounces, f.tb, { gain: 0.95 });
       if (P.noBall) { for (const tr of [rep.tracks.you]) for (const sg of tr.segs.slice(1)) push(ev.squeaks, sg.at + 0.05, { gain: 0.8 }); if (P.takeoff) push(ev.squeaks, P.takeoff - 0.04, { gain: 0.7 }); push(ev.thuds, P.marks.top, { gain: 0.5 }); vt += n / FPS; prev = s; return; }
+      // the wall drill: the tap on the wall, the soft one up off the hand and down onto the floor - no rim
+      if (P.formShot) {
+        for (const tr of [rep.tracks.you]) for (const sg of tr.segs.slice(1)) push(ev.squeaks, sg.at + 0.05, { gain: 0.8 });
+        if (P.takeoff) push(ev.squeaks, P.takeoff - 0.04, { gain: 0.7 });
+        push(ev.thuds, P.marks.top, { gain: 0.5 }); push(ev.releases, P.release, { gain: 0.5 });
+        rep.ball(P.release + 0.01); for (const h of rep._form.hits) push(ev.bounces, h.t, { gain: 0.85 * Math.min(1, h.v / 5) });
+        vt += n / FPS; prev = s; return;
+      }
       { let py = RIM.y - 0.54, vy = -1.9, t = P.netEnd; const G = 9.81, R = 0.12;
         for (let j = 0; j < 6; j++) { const tHit = (vy + Math.sqrt(vy * vy + 2 * G * (py - R))) / G; t += tHit; const vHit = vy - G * tHit; vy = -vHit * 0.62; py = R; if (vy < 0.35) break; push(ev.bounces, t, { gain: 0.85 * Math.min(1, Math.abs(vHit) / 6) }); } }
       push(ev.catches, P.gatherAt, { gain: 0.8 });

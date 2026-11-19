@@ -32,14 +32,14 @@ export const SEQ = [
   { rep: 'spin', cam: 'shot', from: '@shot', to: '@net', rate: 0.8 },
   { rep: 'spin', cam: 'shot', freeze: '@net', dur: 2.2, caption: '{spin.sep} ft. <b>He never got there.</b>' },
 
-  { rep: 'wall', cam: 'side', from: 0.0, to: '@off', rate: 0.8, caption: 'The timing. <b>No ball:</b><br>set, dip, and up...' },
-  { rep: 'wall', cam: 'side', from: '@off', to: '@top', rate: 0.3, caption: '...reach...' },
-  { rep: 'wall', cam: 'side', freeze: '@top', dur: 2.2, caption: '<b>Tap the wall at the very top.</b><br>That\'s the moment.' },
+  { rep: 'wall', cam: 'side', from: 0.0, to: '@off', rate: 0.8, caption: 'The timing. <b>Off hand to the wall,</b><br>ball in the shooting hand: dip, and up...' },
+  { rep: 'wall', cam: 'side', from: '@off', to: '@top', rate: 0.3, caption: '...off hand comes off the ball and up...' },
+  { rep: 'wall', cam: 'side', freeze: '@top', dur: 2.4, caption: '<b>Off hand taps the wall at the very top</b> -<br>as the ball goes up off the other. That\'s the moment.' },
   { rep: 'wall', cam: 'side', from: '@top', to: '@end', rate: 0.8 },
 
-  { rep: 'rise', cam: 'side', from: 0.0, to: '@off', rate: 0.8, caption: 'Now with the ball. <b>Same dip,<br>same rise.</b>' },
-  { rep: 'rise', cam: 'side', from: '@off', to: '@rel', rate: 0.3, caption: 'Ball comes up <b>with your legs -<br>at the same time.</b>' },
-  { rep: 'rise', cam: 'side', freeze: '@rel', dur: 2.4, caption: 'And it goes at the top:<br><b>right where you tapped the wall.</b>' },
+  { rep: 'rise', cam: 'side', from: 0.0, to: '@off', rate: 0.8, caption: 'Now at the rim. <b>Same dip,<br>same rise.</b>' },
+  { rep: 'rise', cam: 'side', from: '@off', to: '@rel', rate: 0.3, caption: 'Ball comes up <b>with your legs</b> -<br>guide hand comes off at the top.' },
+  { rep: 'rise', cam: 'side', freeze: '@rel', dur: 2.4, caption: 'And it goes at the top:<br><b>the moment your off hand tapped the wall.</b>' },
   { rep: 'rise', cam: 'side', from: '@rel', to: '@net', rate: 0.8 },
   { rep: 'rise', cam: 'side', freeze: '@net', dur: 2.0, caption: 'Same time, every time.<br><b>Splash.</b>' },
 
