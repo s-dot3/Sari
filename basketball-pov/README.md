@@ -3,7 +3,8 @@
 2K-style gameplay clips and breakdowns, rendered from three.js and driven by real motion capture.
 
 - **Compilation:** every basketball video below, v1 to v11, back to back in one portrait clip. [`out/compilation.mp4`](out/compilation.mp4) (6:37, 720×1280, 30 fps, H.264 + AAC; the landscape v1-v3 sit over a blurred fill)
-- **v19 (latest): film room, "Downhill".** Attacking the rim without giving the ball away, on real basketball mocap with the ball tracked: a drive that goes by his man hip to hip with the ball on the outside hand while he reaches across at nothing; a crowded rim, the spin away from the help big who jumps at the ball, and the finish off two feet as he comes down; a set help defender, the shoulder into his chest first and the finish through the contact; and the drive and kick, a jump stop and the pass behind the help that's left his man, caught in the shooting pocket. The strip at the bottom is ball security: how close any defender's hand gets to the ball. [`out/downhill.mp4`](out/downhill.mp4) (1080×1920 portrait, 30 fps, H.264 + AAC)
+- **v20 (latest): film room, "Two Moves Max".** One read, two moves, never a third. Move 1 is the in-and-out: a hard dribble out, snatched back. If his hips open, rise, because his weight is going the other way and that beat is the separation. If they stay square, Move 2: one hard dribble straight into his hip and past, to the layup. The shooter is real basketball mocap with the ball tracked, the same man guards both times, and the strip at the bottom is his weight with the window timed. [`out/two_moves_max.mp4`](out/two_moves_max.mp4) (1080×1920 portrait, 30 fps, H.264 + AAC)
+- v19: film room, "Downhill". Attacking the rim without giving the ball away, on real basketball mocap with the ball tracked: a drive that goes by his man hip to hip with the ball on the outside hand while he reaches across at nothing; a crowded rim, the spin away from the help big who jumps at the ball, and the finish off two feet as he comes down; a set help defender, the shoulder into his chest first and the finish through the contact; and the drive and kick, a jump stop and the pass behind the help that's left his man, caught in the shooting pocket. The strip at the bottom is ball security: how close any defender's hand gets to the ball. [`out/downhill.mp4`](out/downhill.mp4) (1080×1920 portrait, 30 fps, H.264 + AAC)
 - v18: film room, "Unguardable" rebuilt on real basketball mocap. The same idea as v17 (beat your man off the dribble, then rise for the three, plus the wall timing drill), but the shooter is now a real player captured with the ball: SkillMimic's BallPlay-M optical mocap, with his own dribbles and jump shots and the ball where it really was, every frame. Two behind-the-backs into a pull-up three, through the legs and back into a pull-up three, a spin into a jumper, then the wall drill on his real jump shot: side-on to the wall, the off hand taps it at the very top as the ball goes up off the shooting hand, then the same jump at the rim, released at that top. [`out/unguardable_v18.mp4`](out/unguardable_v18.mp4) (1080×1920 portrait, 30 fps, H.264 + AAC)
 - v17: film room, "Unguardable". The art of shooting the three, one on one with the skeletons in the gym: a real behind-the-back into a cross back and a step-back three, the snatch back off pound dribbles into a pull-up three, and a pump fake that sends the closeout flying into a side-step three. Each time his weight goes the wrong way first (the balance meter under him turns green) and each one is a make. Then the wall drill for the timing: the 1-2, dip and jump, tapping the wall at the very top, then the same rise with the ball, released at that same top. [`out/unguardable.mp4`](out/unguardable.mp4) (1080×1920 portrait, 30 fps, H.264 + AAC)
 - v16: film room, "No Open Looks". Team defence, three on three, with the skeletons in the gym like the rest of the film room: switching a ball screen, killing a pin-down for a shooter, taking away a backdoor cut, and a scram switch to fix a mismatch, every possession ending in a contested miss. From a high team angle with the play drawn on the floor (who's got who, the switch, the cut), call-outs over the players, the balance meter under the defender with the contest, a shot clock, freezes and slow motion, then the duel view swinging round behind the shooter for the shot. [`out/no_open_looks.mp4`](out/no_open_looks.mp4) (1080×1920 portrait, 30 fps, H.264 + AAC)
@@ -37,6 +38,19 @@ It writes three files:
 - `clip_overlay.mp4`: the footage with the tracked skeleton drawn on it.
 - `clip_pose.mp4`: the skeleton alone on black, the pose-reference format that AI video tools take.
 - `clip.json`: per-frame 2D image landmarks with visibility, plus 3D world landmarks in metres around the hips.
+
+## v20: what it shows
+
+v18's page, one on one: the ball handler in white shoes, his man in red, the floor meter under his man (his feet and where his weight is going), and the weight strip (red: he can contest; green: the window). The same move twice against the same man:
+
+1. **Hips open: rise.** The in-and-out, a hard dribble out in front, and he opens his hips to run with the drive. Snatch it back and rise while his weight is still going the other way. The freeze on the make gives the window, how long his weight was going the wrong way before the ball went up (about one second), and one move was enough.
+2. **Square: Move 2.** Same move, but his hips stay square, so there's no window and no shot. Move 2: one hard dribble by him with the back foot exploding, not around him but into his hip (the contact) and past, and he opened the lane. Two moves either way; the third is where possessions die.
+
+## How v20 is made
+
+- **Move 1** is `bp_back`'s first dribble (BallPlay-M, the ball tracked): out in front at 1.25 to 1.55 s, back at his side by 1.9 s, feet planted. It's cut into `bp_shot_style1`'s dip and jump shot (hips open) or into `bp_layup`'s hard dribble, two steps and layup (square).
+- **His man:** the same CMU stance both times. Hips open is 78_25's run, turned the way the ball went, then a stop, a re-plant and a closeout timed to arrive as the ball goes up. Square is one short slide and back in his stance; the drive's shoulder meets his hip at the pass-by (v5's contact model), then he trails.
+- **Files:** `src/play20.js`, `src/main20.js`, `src/hud20.js`, `src/timeline20.js`, `src/index20.html`, `tools/plan20.mjs`.
 
 ## v19: what it shows
 
@@ -552,6 +566,8 @@ A right-wing isolation with the clock running out and your team down two.
 npm install
 pip install pillow numpy scipy imageio-ffmpeg trimesh networkx mediapipe nibabel scikit-image
 npm run assets      # Rocketbox models + uniforms, CMU mocap clips, the v12 brain
+npm run preview:v20 # quick 540x960 check of v20
+npm run render:v20  # final 1080x1920 v20 with audio -> out/two_moves_max.mp4
 npm run preview:v19 # quick 540x960 check of v19
 npm run render:v19  # final 1080x1920 v19 with audio -> out/downhill.mp4
 npm run preview:v18 # quick 540x960 check of v18

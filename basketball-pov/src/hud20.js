@@ -92,9 +92,8 @@ export class Hud20 {
     const R = this.R[name], rep = this.reps[name], P = rep.plan;
     this.top.querySelector('.title span').textContent = REP_TITLES[name];
     const c = this.strip.querySelector('canvas'); c.getContext('2d').drawImage(R.cv, 0, 0);
-    this.strip.querySelector('.lbl').textContent = P.drill ? 'TIMING' : P.contact ? 'HELP D' : 'HIS WEIGHT';
-    this.strip.querySelector('.legend').innerHTML = P.drill ? '<span><i style="background:var(--amber)"></i>YOUR HIPS</span><span>HIGH = UP</span>' : P.contact
-      ? '<span><i style="background:var(--red)"></i>SET</span><span><i style="background:var(--green)"></i>NOT SET</span>'
+    this.strip.querySelector('.lbl').textContent = P.drill ? 'TIMING' : 'HIS WEIGHT';
+    this.strip.querySelector('.legend').innerHTML = P.drill ? '<span><i style="background:var(--amber)"></i>YOUR HIPS</span><span>HIGH = UP</span>'
       : '<span><i style="background:var(--red)"></i>CAN CONTEST</span><span><i style="background:var(--green)"></i>WINDOW OPEN</span>';
     for (const m of this.marks) m.e.remove();
     const bar = this.strip.querySelector('.bar');
@@ -147,7 +146,8 @@ export class Hud20 {
     this.strip.querySelector('.sub').textContent = sub;
     // contact burst: two rings punching out from where his shoulder meets the defender's chest
     const hitT = hitAt && hitAt.tap ? P.marks.top - 0.02 : P.contact ? P.contact.t : null;
-    const hu = hitT !== null && hitAt && hitAt.visible ? (fr.freeze ? 0.55 : (st - hitT) / 0.4) : -1;
+    // (a freeze shows the burst only if it's on the hit itself)
+    const hu = hitT !== null && hitAt && hitAt.visible ? (fr.freeze ? (Math.abs(st - hitT) < 0.15 ? 0.55 : -1) : (st - hitT) / 0.4) : -1;
     this.hit.querySelector('span').textContent = hitAt && hitAt.tap ? 'TAP' : 'CONTACT';
     if (hu >= 0 && hu <= 1) {
       Object.assign(this.hit.style, { left: hitAt.x + 'px', top: hitAt.y + 'px', opacity: String(1 - smooth((hu - 0.55) / 0.45)) });

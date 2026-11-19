@@ -4,8 +4,8 @@
 // measured number.
 export const FPS = 30;
 export const REP_TITLES = {
-  open: 'MOVE 1 · HIPS OPEN',
-  square: 'MOVE 1 · HIPS SQUARE → MOVE 2',
+  open: '1 · HIPS OPEN: RISE',
+  square: '2 · SQUARE: MOVE 2',
 };
 export const SEQ = [
   { card: 'intro', rep: 'open', cam: 'shot', freeze: 0.1, dur: 4.0 },
