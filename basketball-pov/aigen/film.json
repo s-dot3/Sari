@@ -1,0 +1,34 @@
+{
+  "title": "Two Moves Max",
+  "still": {
+    "endpoint": "fal-ai/bytedance/seedream/v4.5/text-to-image",
+    "args": {
+      "prompt": "Photorealistic still frame from professional NBA basketball broadcast footage. Wide shot from a fixed camera on the sideline, slightly elevated, looking across the court at the right side of the free-throw lane; the basket - glass backboard, orange rim and white net - is near the left edge of the frame and fully visible. Polished hardwood floor with a painted lane and three-point line, empty arena with dark stands, bright even court lighting. The two players are anatomically accurate human skeletons made of real ivory bone, with complete, correct anatomy: skull with jaw and teeth, neck vertebrae, rib cage with twelve pairs of ribs and a sternum, clavicles and shoulder blades, spine, pelvis, thigh bones, kneecaps, shin bones, ankle and foot bones, upper arm and forearm bones, and every bone of the hands. They stand with the posture and balance of elite NBA athletes. The skeleton on the right is the ball handler, wearing white basketball shoes and a white wristband: he stands at the right elbow facing left toward the basket, holding a real basketball at his hip in triple threat. The skeleton on the left, wearing navy basketball shoes and a navy wristband, is his defender: a low, wide defensive stance between him and the basket, a stride and a half away, facing him, arms out. Both skeletons are completely in frame from skull to feet and fill about half of the frame height. No skin, no muscles, no clothing except the shoes and wristbands. No logos, no text, no watermark. Sharp focus, natural colors, real photograph.",
+      "image_size": {"width": 2560, "height": 1440},
+      "num_images": 2,
+      "enable_safety_checker": true
+    }
+  },
+  "reps": {
+    "open": {
+      "title": "1 · HIPS OPEN: RISE",
+      "endpoint": "bytedance/seedance-2.5/image-to-video",
+      "args": {
+        "prompt": "One continuous shot from a locked-off tripod camera: the camera does not move, pan, tilt or zoom for the whole clip. Two anatomically accurate human skeletons play one-on-one basketball with real NBA speed, weight and body mechanics; every bone keeps its exact shape, size and place for the whole clip - nothing bends, stretches, morphs, merges or disappears. The ball-handler skeleton in white shoes starts a live dribble with his right hand, sizing up his defender. At about two seconds he makes one hard in-and-out dribble: he pushes the ball out hard to his right as if driving, then snatches it straight back with the same hand. The defender skeleton in navy shoes bites on it: he opens his hips and takes a big step to cut off the drive, his weight going the wrong way. In that instant the ball handler gathers and rises straight up into a smooth, balanced pull-up jump shot - full extension, high release, follow-through. The defender is too late to recover and contest. The ball arcs high and drops cleanly through the net, a swish. The shooter lands balanced and holds his follow-through. Natural footwork, realistic balance and acceleration, real ball physics. No slow motion, no cuts, no text.",
+        "duration": "8",
+        "resolution": "720p",
+        "generate_audio": true
+      }
+    },
+    "square": {
+      "title": "2 · SQUARE: MOVE 2",
+      "endpoint": "bytedance/seedance-2.5/image-to-video",
+      "args": {
+        "prompt": "One continuous shot from a locked-off tripod camera: the camera does not move, pan, tilt or zoom for the whole clip. Two anatomically accurate human skeletons play one-on-one basketball with real NBA speed, weight and body mechanics; every bone keeps its exact shape, size and place for the whole clip - nothing bends, stretches, morphs, merges or disappears. The ball-handler skeleton in white shoes dribbles with his right hand and makes one hard in-and-out dribble: ball pushed out to his right, snatched straight back. This time the defender skeleton in navy shoes does not bite: he stays square and balanced, hips square, one short slide with him. Immediately the ball handler plants and explodes off his back foot: one hard, low dribble straight at the defender's hip - shoulder into hip, a solid bump - and he is past him, attacking the basket, two long steps and a right-handed layup off the glass that goes in. The defender is knocked off balance, turns and trails the play. Natural footwork, realistic balance, acceleration and contact, real ball physics. No slow motion, no cuts, no text.",
+        "duration": "8",
+        "resolution": "720p",
+        "generate_audio": true
+      }
+    }
+  }
+}

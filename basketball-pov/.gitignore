@@ -29,3 +29,10 @@ out/events17.json
 out/events18.json
 out/events19.json
 out/events20.json
+
+# AI pipeline: the stock test clip (not ours to commit), per-frame detection caches, partial downloads
+aigen/work/_test
+aigen/work/*/detect.pkl
+aigen/gen/*.part
+aigen/gen/*.log
+out/events_ai*.json
