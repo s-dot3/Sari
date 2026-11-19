@@ -1,0 +1,25 @@
+{
+  "title": "X-Ray Hooper",
+  "ratio": "9:16",
+  "resolution": "720p",
+  "duration": 8,
+  "style": "Glowing white X-ray skeleton basketball player with subtle blue muscle highlights, dark NBA court at night, arena crowd in the dark background, smooth realistic human biomechanics, cinematic, vertical composition.",
+  "shots": [
+    {"name": "01_walkout", "action": "The skeleton walks out of the dark tunnel onto the court, ball tucked under one arm, spotlight finding him at half court; slow push-in on his glowing skull."},
+    {"name": "02_pound", "action": "Low, violent right-hand pound dribbles, the ball snapping off the hardwood, camera at ball height in front of him."},
+    {"name": "03_tweeners", "action": "Rapid between-the-legs combo, three in a row, low stance, the ball a blur under him, front three-quarter view."},
+    {"name": "04_snatch", "action": "He dribbles hard right with one violent pound dribble, snatches the ball back left in a low crossover, stops dead with a 1-2 step, rises straight up with no forward drift, releases a smooth jump shot at the peak, high arc swish."},
+    {"name": "05_btb_dunk", "action": "Behind-the-back dribble into a hard drive down the lane, two steps, two-hand dunk, the rim shaking."},
+    {"name": "06_spin_fade", "action": "Spin move at the elbow, fades away over his left shoulder, jumper at the top, swish, he holds the follow-through."},
+    {"name": "07_stepback", "action": "A second X-ray skeleton defender with red muscle highlights guards him on the wing; crossover, hard step-back behind the arc, high-arc three, swish."},
+    {"name": "08_hesi_reverse", "action": "Hesitation dribble at the top, explodes baseline past the red-highlighted skeleton defender, reverse layup off the glass."},
+    {"name": "09_eurostep", "action": "Euro step through the lane, left then right around the defender, soft finger roll over the rim."},
+    {"name": "10_shamgod", "action": "Pull-back crossover (Shamgod) at the top of the key, the defender stumbles, pull-up jumper, swish."},
+    {"name": "11_tweener_three", "action": "Tweener crossover, side-step to his left, set feet, three-pointer from the corner, net snaps."},
+    {"name": "12_fastbreak", "action": "Full-speed fast break down the court, camera tracking alongside, one dribble, takeoff from the dotted line, tomahawk dunk."},
+    {"name": "13_self_oop", "action": "Throws the ball off the backboard to himself, catches it in the air and finishes with a windmill dunk."},
+    {"name": "14_freethrow", "action": "At the free-throw line: three dribbles, spins the ball in his fingers, deep breath, release, swish; camera behind him."},
+    {"name": "15_gamewinner", "action": "Isolation at the top against the red defender, two crossovers, rises over the contest at the buzzer, the shot drops; arena lights flare."},
+    {"name": "16_walkoff", "action": "He walks back into the dark tunnel with the ball under his arm, glow fading, the court lights dimming behind him."}
+  ]
+}

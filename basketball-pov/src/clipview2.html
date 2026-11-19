@@ -1,0 +1,60 @@
+<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;background:#222;overflow:hidden}</style>
+<script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/"}}</script>
+</head><body><script type="module">
+// a clip on the film-room skeleton, with the take's own ball (if it has one) - for checking takes
+import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { loadTemplates, makePlayerMesh, Rig } from './player.js';
+import { loadClip, sampleClip, toTargets, Placement, facingYaw, hipCenter } from './mocap.js';
+import { calibrate } from './animator.js';
+import { loadBones, makeBoneSkeleton, makeShoes } from './boneskel.js';
+import { makeBall } from './ball.js';
+try {
+  const q = new URLSearchParams(location.search);
+  const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+  renderer.setSize(innerWidth, innerHeight); renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.shadowMap.enabled = true;
+  document.body.appendChild(renderer.domElement);
+  const scene = new THREE.Scene(); scene.background = new THREE.Color(0x3a3f48);
+  scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture; scene.environmentIntensity = 0.5;
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x404040, 0.9));
+  const dl = new THREE.DirectionalLight(0xffffff, 2.2); dl.position.set(3, 8, 5); dl.castShadow = true; dl.shadow.mapSize.set(2048, 2048);
+  Object.assign(dl.shadow.camera, { left: -6, right: 6, top: 6, bottom: -6 }); scene.add(dl);
+  scene.add(new THREE.GridHelper(20, 20, 0x888888, 0x555555));
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), new THREE.MeshStandardMaterial({ color: 0x9a7b55 }));
+  floor.rotation.x = -Math.PI / 2; floor.position.y = -0.002; floor.receiveShadow = true; scene.add(floor);
+  const T = await loadTemplates(['04']);
+  const { root, k } = makePlayerMesh(T, { model: '04', tex: 'you', height: 2.125 }); scene.add(root);
+  const rig = new Rig(root, k);
+  const bones = await loadBones('../assets/bones');
+  let m = null; root.traverse(o => { if (o.isSkinnedMesh && !m) m = o; });
+  makeBoneSkeleton(bones, m, { feet: false, material: new THREE.MeshStandardMaterial({ color: 0xe4d8c2, roughness: 0.52 }) }); makeShoes(m); m.visible = false;
+  const ball = makeBall(scene);
+  const clip = await loadClip(q.get('clip'));
+  const ourLeg = rig.len.thigh + rig.len.calf;
+  calibrate(clip, ourLeg);
+  const s0 = sampleClip(clip, 0);
+  const pl = new Placement(hipCenter(s0), facingYaw(s0), new THREE.Vector3(0, 0, 0), Math.PI, clip.cal.scale);
+  const src = { armLen: clip.armLen, scale: clip.cal.scale, footRest: clip.cal.footRest };
+  const cam = new THREE.PerspectiveCamera(35, innerWidth / innerHeight, 0.05, 100);
+  window.info = { n: clip.n, dur: clip.dur, fps: clip.fps, scale: clip.cal.scale, lift: clip.cal.lift, footRest: clip.cal.footRest, hasBall: !!clip.pos.ball };
+  window.renderAt = (t, view) => {
+    const s = sampleClip(clip, t);
+    for (const kk of Object.keys(s.pos)) s.pos[kk].y += clip.cal.lift - clip.cal.minY;
+    const Tg = toTargets(s, pl);
+    rig.applyMocap(Tg, src, {});
+    const hc = Tg.pos.lhipjoint.clone().add(Tg.pos.rhipjoint).multiplyScalar(0.5);
+    let gap = null;
+    if (Tg.pos.ball) {
+      ball.visible = true; ball.position.copy(Tg.pos.ball);
+      // the rig's hands against the take's: how far off the ball they are
+      gap = { L: +rig.P.L_Hand.distanceTo(Tg.pos.ball).toFixed(3), R: +rig.P.R_Hand.distanceTo(Tg.pos.ball).toFixed(3), dL: +rig.P.L_Hand.distanceTo(Tg.pos.lradius).toFixed(3), dR: +rig.P.R_Hand.distanceTo(Tg.pos.rradius).toFixed(3) };
+    } else ball.visible = false;
+    const ang = (view || 0) * Math.PI / 180;
+    cam.position.set(hc.x + Math.sin(ang) * 5.6, 1.5, hc.z + Math.cos(ang) * 5.6); cam.lookAt(hc.x, 1.05, hc.z);
+    scene.updateMatrixWorld(true); renderer.render(scene, cam);
+    return { x: +hc.x.toFixed(2), z: +hc.z.toFixed(2), yaw: +Tg.yaw.toFixed(2), gap };
+  };
+  await new Promise(r => setTimeout(r, 1500));
+  window.__ready = true;
+} catch (e) { window.__error = String(e.stack || e); }
+</script></body></html>
