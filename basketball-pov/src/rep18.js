@@ -7,7 +7,7 @@
 // to the rim as before.
 import * as THREE from 'three';
 import { Rep, RIM } from './rep5.js';
-import { BALL_R } from './game2.js';
+import { BALL_R, ballistic } from './game2.js';
 
 const HZ = 240;
 const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
@@ -26,7 +26,8 @@ export class Rep18 extends Rep {
     for (let i = 0; i < n; i++) {
       const t = i / HZ, P = tr.at(t); this.contactOffset('you', P, t);
       rig.applyMocap(P, P.src, {});
-      const b = P.pos.ball.clone(), corr = V();
+      // (a stretch of a take without a ball - before a pass reaches him - just keeps it at his hips; unused)
+      const b = P.pos.ball ? P.pos.ball.clone() : P.pos.lhipjoint.clone().add(P.pos.rhipjoint).multiplyScalar(0.5), corr = V();
       let ws = 0;
       for (const s of ['L', 'R']) {
         const k = s.toLowerCase(), palm = P.pos[k + 'radius'].clone().lerp(P.pos[k + 'hand'], 0.6);
@@ -68,14 +69,53 @@ export class Rep18 extends Rep {
     }
     return this._fo;
   }
+  // a pass to him (plan.pass) flies into where his take has the ball as he catches it
+  catchPoint() {
+    if (!this.plan.rec) return super.catchPoint();
+    if (!this._catch) this._catch = this.recBall(this.plan.pass.t1);
+    return this._catch;
+  }
+  // a layup (plan.layup) goes off the glass from where the take's hand let it go
+  layupBall(t) {
+    if (this.plan.rec && !this._rel) {
+      this._rel = this.recBall(this.plan.release);
+      this._board = V(Math.sign(this._rel.x || 1) * 0.17, 3.37, -0.38 + BALL_R + 0.005);
+      this._rim = V(0.02, RIM.y + 0.08, 0.02);
+    }
+    return super.layupBall(t);
+  }
   handsAndBall(t) {
     const P0 = this.plan;
     if (!P0.rec) return super.handsAndBall(t);
+    if (P0.pass && t < P0.pass.t1) {
+      const C = this.catchPoint(), from = V(P0.pass.from.x, P0.pass.from.y, P0.pass.from.z);
+      return { B: t <= P0.pass.t0 ? from : ballistic(from, C, P0.pass.t0, P0.pass.t1, t), state: 'pass', ov: {} };
+    }
     if (P0.release === undefined || t < P0.release) {
       const i = clamp(Math.round(t * HZ), 0, this.T.n - 1);
       return { B: this.recBall(t), state: this.recHeld[i] > 0.5 ? 'held' : 'dribble', ov: {} };
     }
+    // (a pass out: from the release the ball is the catcher's rep's)
+    if (P0.passOut) return { B: this.recBall(P0.release), state: 'gone', ov: {} };
+    if (P0.layup) return { ...this.layupBall(t), ov: {} };
     return { ...this.shotBall(t), ov: {} };
+  }
+  // plan.swipe: [{ from, to, side, gap }] - a reach at the ball (from behind, or in the passing lane) that comes up
+  // short: the hand goes at the ball but stops `gap` m (wrist to ball centre) off it, because there's a body or
+  // distance in the way
+  d1Pose(t) {
+    const R = super.d1Pose(t), sw = this.plan.swipe;
+    if (!sw) return R;
+    for (const k of [].concat(sw)) {
+      const w = smooth((t - k.from) / (k.rise ?? 0.15)) * (1 - smooth((t - k.to) / (k.fall ?? 0.25)));
+      if (w <= 0) continue;
+      const sh = this.tab(k.side === 'L' ? 'd1shL' : 'd1shR', t), B = this.handsAndBall(t).B, to = B.clone().sub(sh), d = to.length();
+      to.normalize();
+      const reach = Math.min(this.armLen.d1 * 0.97, Math.max(0.3, d - (k.gap ?? 0.42)));
+      const out = V(-to.z, 0, to.x).multiplyScalar(k.side === 'L' ? -1 : 1);
+      R.opt.handOverride = { ...(R.opt.handOverride || {}), [k.side]: { pos: sh.clone().addScaledVector(to, reach), palm: to.clone(), dir: to.clone(), pole: V(0, -1, 0).addScaledVector(out, 0.5).normalize(), curl: 0.12, w } };
+    }
+    return R;
   }
   // eyes up: the performer dribbles looking at the ball (a drill habit); in a game it's on his man, then the rim.
   // plan.eyes: [{ from, to, w }] lowers that for a while (a spin: the head goes round with the body)
