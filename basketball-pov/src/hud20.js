@@ -140,7 +140,7 @@ export class Hud20 {
     else if (fr.rate < 0.6) { ms.className = ''; ms.textContent = `SLOW-MO  ${fr.rate.toFixed(2).replace(/0$/, '')}×`; this.mode.style.opacity = '1'; }
     else this.mode.style.opacity = '0';
     // his state right now, in the panel over the strip (held through the rim shots)
-    const kind = this.stateAt(fr.rep, P.drill ? st : Math.min(st, P.contact ? P.contact.t : P.release)), [txt, sub] = KIND[kind], open = !['balanced', 'set', 'out', 'square'].includes(kind);
+    const kind = this.stateAt(fr.rep, P.drill ? st : Math.min(st, P.release)), [txt, sub] = KIND[kind], open = !['balanced', 'set', 'out', 'square'].includes(kind);
     const warn = kind === 'out' || kind === 'by';
     const pill = this.strip.querySelector('.pill'); pill.textContent = txt; pill.classList.toggle('open', open && !warn); pill.classList.toggle('warn', warn);
     this.strip.querySelector('.sub').textContent = sub;

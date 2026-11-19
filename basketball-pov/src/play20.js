@@ -88,7 +88,7 @@ export const REPS = {
       // at his hip: the shoulder meets it as they go by, he's knocked off it and turned, and trails
       const go = (t) => you.hip(t), tGo = tBack + 0.1, p0 = go(tGo), p1 = go(tGo + 0.6), L = Math.hypot(p1.x - p0.x, p1.z - p0.z) || 1;
       const dir = { x: (p1.x - p0.x) / L, z: (p1.z - p0.z) / L }, lft = { x: dir.z, z: -dir.x };
-      const D0 = { x: p0.x + dir.x * 1.45 + lft.x * 0.5, z: p0.z + dir.z * 1.45 + lft.z * 0.5 };
+      const D0 = { x: p0.x + dir.x * 1.45 + lft.x * 0.62, z: p0.z + dir.z * 1.45 + lft.z * 0.62 };
       const x = new Player(clips, legs.d1, 'd1').start('guard', D0, you.hip(0));
       const out = ballOut(you, simOf(A, MOVE1.bounce));
       // (the stance's slide that takes him the way it went, seen from where he faces)
@@ -98,11 +98,11 @@ export const REPS = {
       // (the hit: when the driver's hips come level with his)
       let tHit = tGo + 0.3; const X0 = x.track();
       for (let t = tGo; t < release; t += 0.01) { const a = you.hip(t), b = X0.hip(t); if ((a.x - b.x) * dir.x + (a.z - b.z) * dir.z > -0.12) { tHit = t; break; } }
-      const back = (t) => { const h = you.hip(t); return { x: h.x - dir.x * 1.0 + lft.x * 0.75, z: h.z - dir.z * 1.0 + lft.z * 0.75 }; };
+      const back = (t) => { const h = you.hip(t); return { x: h.x - dir.x * 1.3 + lft.x * 1.05, z: h.z - dir.z * 1.3 + lft.z * 1.05 }; };
       x.go('run', back(release + 0.2), tHit + 0.2, release + 0.2, { rmin: 0.75, rmax: 1.6 });
       x.hold('tall', x.lastArrive, (t) => you.hip(t));
       const d1 = x.track();
-      P.contact = { t: tHit, push: 0.16, you: 0.05 };
+      P.contact = { t: tHit, push: 0.22, you: 0.05 };
       P.contest = [];
       P.marks = { read: tOut + RT + 0.3, go: tGo + 0.04, hit: tHit + 0.05, finish: release - 0.3 };
       P.labels = [{ t: 0, kind: 'set', open: 0 }, { t: tOut, kind: 'out', open: 0 }, { t: tOut + RT + 0.08, kind: 'square', open: 0 }, { t: tGo, kind: 'by', open: 0.3 }, { t: tHit, kind: 'hip', open: 1 }, { t: tHit + 0.4, kind: 'past', open: 1 }];
