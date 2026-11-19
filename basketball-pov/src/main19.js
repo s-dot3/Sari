@@ -198,7 +198,7 @@ function tagsOn(rep, st, fe, mode = 'film') {
     const r = players[t.who].rig; v.copy(r.P.Head).add(new THREE.Vector3(0, t.up ?? 0.42, 0)).project(camera);
     if (v.z > 1) continue;
     // (never up into the title: a call-out over a man in the air stops under it)
-    out.push({ x: (v.x + 1) / 2 * W, y: Math.max(330, (1 - v.y) / 2 * H), text: t.text, kind: t.kind, a, pop, w: 30 + 24 * t.text.length });
+    out.push({ x: (v.x + 1) / 2 * W, y: Math.max(500, (1 - v.y) / 2 * H), text: t.text, kind: t.kind, a, pop, w: 30 + 24 * t.text.length });
   }
   // (call-outs over players standing together are stacked, not piled on each other)
   out.sort((p, q) => q.y - p.y);

@@ -127,7 +127,7 @@ export const REPS = {
       // x2, the big: on the weak-side block, he steps up to meet the drive - on its right, where the ball is going -
       // and jumps at the ball as it comes up in the spin (124_05's jump, both hands up); he's coming down when the shot
       // goes up off two feet on the other side of him
-      const tJump = tUp + 0.08, TO = wayAt(o1, P.takeoffAt - 0.25), MEET = { x: TO.p.x - TO.l.x * 1.15 + TO.f.x * 0.4, z: TO.p.z - TO.l.z * 1.15 + TO.f.z * 0.4 };
+      const tJump = tUp + 0.08, TO = wayAt(o1, P.takeoffAt - 0.25), MEET = { x: TO.p.x - TO.l.x * 1.5 + TO.f.x * 0.45, z: TO.p.z - TO.l.z * 1.5 + TO.f.z * 0.45 };
       const BLOCK = { x: MEET.x * 0.4 + 1.9 * 0.6, z: 1.1 };
       const x2 = new Player(clips, legs.x2, 'x2').start('guard', BLOCK, o1.hip(0));
       x2.go('runStop', MEET, 0.4, tJump - 0.42, { rmin: 0.75 });
@@ -167,10 +167,13 @@ export const REPS = {
       P.layup = { releaseClip: 2.13, side: 'L', oneHand: 0 }; P.takeoffAt = simOf(B, 1.72); P.gatherAt = simOf(B, 1.45);
       // x2: from the weak side, over into the lane and set (feet down, square, hands up) before he gets there, in his
       // path a body's width off where he takes off
-      const tHit = P.takeoffAt - 0.04, path = o1.hip(tHit), SET = toward(path, RIM, 0.55);
+      // (tall - straight up, the stance you take a hit in - a body's width on from where he takes off; the hit is
+      // the moment the driver's hips come within 0.66 m of his)
+      const SET = toward(o1.hip(P.takeoffAt), RIM, 0.8);
+      let tHit = P.takeoffAt; for (let t = P.takeoffAt - 0.5; t < release; t += 0.01) { const h = o1.hip(t); if (Math.hypot(h.x - SET.x, h.z - SET.z) < 0.66) { tHit = t; break; } }
       const x2 = new Player(clips, legs.x2, 'x2').start('guard', { x: -2.0, z: 1.6 }, o1.hip(0));
       x2.go('runStop', SET, 0.2, tHit - 0.45, { rmin: 0.75 });
-      x2.hold('set', x2.lastArrive, (t) => o1.hip(t));
+      x2.hold('tall', x2.lastArrive, (t) => o1.hip(t));
       const X2 = x2.track();
       // x1: beaten off the first step, behind his hip
       const x1 = beatenMan(clips, legs.x1, o1, 0.5, release + 0.3, { gap: 0.85, chase: [1.2, 0.9], dirTo: P.takeoffAt });
@@ -193,7 +196,7 @@ export const REPS = {
   // pocket, away from his hands. Catch, shoot.
   kick: {
     simEnd: 4.7,
-    plan: { rec: true, shotClip: 0.842, flight: 1.2, camRef: 2.4, camAngle: 0.8, camSide: -1, camH: 2.2 },
+    plan: { rec: true, shotClip: 0.842, flight: 1.2, camRef: 2.4, camAngle: 0.8, camSide: 1, camH: 2.2 },
     build(clips, legs) {
       const P = this.plan, log = [];
       // o1, the passer: bp_run_823 into a stop on both feet, turned to the shooter, set a beat (bp_pass's own stance,
@@ -238,7 +241,8 @@ export const REPS = {
         { who: 'o2', text: 'POCKET', kind: 'off', from: t1 - 0.15, to: t1 + 0.4 },
       ];
       P.arrows = [{ who: 'x2', from: tStop - 0.75, to: tPass - 0.08, at: P.marks.commit, until: tPass + 0.4, color: 'def', delay: 0.6 }];
-      P.camFilm = { focus: (t) => fade(t, tPass - 0.1, t1 + 0.3, { o1: 1.3, x2: 1.0, o2: 1.0, x1: 0.3 }, { o2: 1.5, x2: 1.0, o1: 0.5 }), off: { x: -0.4, y: 6.2, z: 7.4 }, lookY: 0.5, fov: 58, spread: 0.12, span0: 3.0 };
+      const LL = Math.hypot(WING.x - STOP.x, WING.z - STOP.z), LANE = { x: (WING.x - STOP.x) / LL, z: (WING.z - STOP.z) / LL };
+      P.camFilm = { focus: (t) => fade(t, tPass - 0.1, t1 + 0.3, { o1: 1.3, x2: 1.0, o2: 1.0, x1: 0.3 }, { o2: 1.5, x2: 1.0, o1: 0.5 }), off: { x: -5.4 * LANE.x, y: 4.4, z: -5.4 * LANE.z }, lookY: 0.7, fov: 52, spread: 0.0, span0: 9 };
       Object.assign(P, { camRef: tRel - 0.4 });
       log.push(`o1 ${f2(o1.hip(0))} stop ${f2(o1.hip(tStop))} pass ${tPass.toFixed(2)} -> catch ${t1.toFixed(2)} release ${tRel.toFixed(2)} | x2 help ${f2(HELP)}`, ...x2.log, ...x1.log);
       return { cast: { you: 'o2', d1: 'x2', A: 'o1' }, you: o2, d1: X2, partA: { tracks: { you: o1, d1: X2 }, plan: planA },
