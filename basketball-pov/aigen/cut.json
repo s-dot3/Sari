@@ -1,0 +1,26 @@
+{
+  "kicker": "TWO MOVES MAX",
+  "titles": {"open": "1 · HIPS OPEN: RISE", "square": "2 · SQUARE: MOVE 2"},
+  "cards": {
+    "intro": "<div class=\"k\">FILM ROOM · THE READ</div><div class=\"h\">TWO MOVES MAX</div><div class=\"s\">One read. Two moves. Never a third.</div><div class=\"list\"><div>Move 1 · In-and-out: hips open? Rise.</div><div>Move 2 · Square? One hard dribble - into his hip, past.</div></div>",
+    "outro": "<div class=\"big\">Separation isn't<br><em>distance.</em></div><div class=\"big\" style=\"margin-top:60px\">It's the beat his weight<br>went one way -<br><em>and you went up.</em></div><div class=\"src\">Every frame is AI-generated video: Seedance 2.5, animated from one AI-generated opening frame (Seedream 4.5). No real footage.</div>"
+  },
+  "seq": [
+    {"card": "intro", "rep": "open", "freeze": 0.0, "dur": 3.6},
+    {"rep": "open", "from": 0.0, "to": "@end", "live": true},
+    {"rep": "open", "from": "@move", "to": "@read", "rate": 0.5, "caption": "Move 1: <b>the in-and-out.</b><br>Hard dribble out..."},
+    {"rep": "open", "freeze": "@read", "dur": 2.6, "caption": "...<b>his hips open.</b><br>His weight is going with the drive."},
+    {"rep": "open", "from": "@read", "to": "@release", "rate": 0.5, "caption": "Snatch it back - <b>and rise.</b><br>He guessed your speed wrong."},
+    {"rep": "open", "from": "@release", "to": "@net"},
+    {"rep": "open", "freeze": "@net", "dur": 2.4, "caption": "<b>That's the window.</b><br>One move was enough."},
+
+    {"rep": "square", "from": 0.0, "to": "@end", "live": true},
+    {"rep": "square", "from": "@move", "to": "@read", "rate": 0.5, "caption": "Same move. <b>Hard dribble out,</b><br>snatch it back..."},
+    {"rep": "square", "freeze": "@read", "dur": 2.4, "caption": "...<b>his hips stay square.</b><br>No window - don't force the shot."},
+    {"rep": "square", "from": "@read", "to": "@hit", "rate": 0.5, "caption": "Move 2: <b>one hard dribble by him.</b><br>The back foot explodes."},
+    {"rep": "square", "freeze": "@hit", "dur": 2.2, "caption": "<b>Not around him - into his hip.</b><br>Then past."},
+    {"rep": "square", "from": "@hit", "to": "@net", "caption": "He opened the lane."},
+    {"rep": "square", "freeze": "@net", "dur": 2.4, "caption": "Two moves, either way.<br><b>The third is where possessions die.</b>"},
+    {"card": "outro", "rep": "square", "freeze": "@net", "dur": 4.2}
+  ]
+}
