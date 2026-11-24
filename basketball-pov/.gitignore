@@ -36,3 +36,5 @@ aigen/work/*/detect.pkl
 aigen/gen/*.part
 aigen/gen/*.log
 out/events_ai*.json
+aigen/_test/
+aigen/work/
